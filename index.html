@@ -736,25 +736,30 @@ function renderDashboard(area) {
   const user = currentUser;
   const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
   
-  // SALDO = Total ALL pemasukan - Total ALL pengeluaran (ever)
-  const totalIn = trans.filter(t=>t.tipe==='pemasukan').reduce((s,t)=>s+Number(t.jumlah),0);
-  const totalOut = trans.filter(t=>t.tipe==='pengeluaran').reduce((s,t)=>s+Number(t.jumlah),0);
+  // SALDO = Filter bulan ini aja (reset tiap tanggal 1)
+  const bulanIni = trans.filter(t=>{
+    const d = new Date(t.tanggal);
+    const now = new Date();
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  });
+  const totalIn = bulanIni.filter(t=>t.tipe==='pemasukan').reduce((s,t)=>s+Number(t.jumlah),0);
+  const totalOut = bulanIni.filter(t=>t.tipe==='pengeluaran').reduce((s,t)=>s+Number(t.jumlah),0);
   const saldo = totalIn - totalOut;
   
-  // SALDO BAPAK = Total ALL pemasukan kategori "BAPAK" (ever)
-  const bapakIn = trans.filter(t=>t.tipe==='pemasukan' && t.kategori==='BAPAK').reduce((s,t)=>s+Number(t.jumlah),0);
+  // SALDO BAPAK = Bulan ini aja
+  const bapakIn = bulanIni.filter(t=>t.tipe==='pemasukan' && t.kategori==='BAPAK').reduce((s,t)=>s+Number(t.jumlah),0);
   
-  // SALDO CASH = (Total pemasukan BAPAK + CASH) - Total ALL pengeluaran
-  const cashIn = trans.filter(t=>t.tipe==='pemasukan' && t.kategori==='CASH').reduce((s,t)=>s+Number(t.jumlah),0);
+  // SALDO CASH = (BAPAK + CASH bulan ini) - Total pengeluaran bulan ini
+  const cashIn = bulanIni.filter(t=>t.tipe==='pemasukan' && t.kategori==='CASH').reduce((s,t)=>s+Number(t.jumlah),0);
   const saldoCash = (bapakIn + cashIn) - totalOut;
   
   const todayStr = today();
-  const todayTrans = trans.filter(t=>t.tanggal===todayStr);
+  const todayTrans = bulanIni.filter(t=>t.tanggal===todayStr);
   
-  const weekTrans = trans.filter(t=>{
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  const weekTrans = bulanIni.filter(t=>{
     const d = new Date(t.tanggal);
     const now = new Date();
-    const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
     return d>=weekAgo;
   });
   
