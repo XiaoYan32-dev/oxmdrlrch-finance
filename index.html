@@ -11,6 +11,9 @@
 <meta name="theme-color" content="#4a9df5">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Inter',sans-serif;background:#f0f2f6;color:#333;overflow-x:hidden}
@@ -295,133 +298,327 @@ body{padding-bottom:60px}
   </div>
 </div>
 
+
 <script>
-// ======================== DATA ========================
-function getData(key, def) {
-  try { const d = localStorage.getItem('oxm_'+key); return d ? JSON.parse(d) : def; }
-  catch(e) { return def; }
+// ======================== FIREBASE INIT ========================
+const firebaseConfig = {
+  apiKey: "AIzaSyB7xSp3O_CKLyLlMxuMsBFd1SkN3SpDLok",
+  authDomain: "oxmdlrch-finance.firebaseapp.com",
+  projectId: "oxmdlrch-finance",
+  storageBucket: "oxmdlrch-finance.firebasestorage.app",
+  messagingSenderId: "696771224735",
+  appId: "1:696771224735:web:2971a12daf85d171cdeeaa"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ======================== CACHE ========================
+window._transCache = [];
+window._usersCache = [];
+window._catCache = ['BAPAK','CASH','Makanan','Minuman','Snack','Belanja','Transport','Tagihan','Lainnya'];
+window._settingsCache = {nama:'OxMDLRCH FINANCE', email:'notif@oxmdrlrch.my.id', zona:'Asia/Jakarta'};
+window._cacheReady = false;
+window._cacheCallbacks = [];
+
+function onCacheReady(fn) {
+  if(window._cacheReady) { fn(); return; }
+  window._cacheCallbacks.push(fn);
 }
-function setData(key, val) { localStorage.setItem('oxm_'+key, JSON.stringify(val)); }
 
-function getUsers() { return getData('users', []); }
-function setUsers(u) { setData('users', u); }
-function getTrans() { return getData('trans', []); }
-function setTrans(t) { setData('trans', t); }
-function getCats() { return getData('cats', ['BAPAK','CASH','Makanan','Minuman','Snack','Belanja','Transport','Tagihan','Lainnya']); }
-function setCats(c) { setData('cats', c); }
-function getSettings() { return getData('settings', {nama:'OxMDLRCH FINANCE', email:'notif@oxmdrlrch.my.id', zona:'Asia/Jakarta'}); }
-function setSettings(s) { setData('settings', s); }
-function getCurrentUser() { try {const d=localStorage.getItem('oxm_current'); return d?JSON.parse(d):null}catch(e){return null} }
+// ======================== FIRESTORE HELPERS ========================
+function _startTransListener() {
+  db.collection('trans').orderBy('createdAt', 'desc').onSnapshot(snap => {
+    const arr = [];
+    snap.forEach(d => { arr.push({id: d.id, ...d.data()}); });
+    window._transCache = arr;
+    if(!window._cacheReady) {
+      window._cacheReady = true;
+      window._cacheCallbacks.forEach(fn => fn());
+      window._cacheCallbacks = [];
+    }
+    if(currentUser && ['dashboard','riwayat','laporan'].includes(currentPage)) {
+      const area = document.getElementById('contentArea');
+      if(area && area.innerHTML) {
+        if(currentPage === 'dashboard') renderDashboard(area);
+        else if(currentPage === 'riwayat') renderRiwayat(area);
+        else if(currentPage === 'laporan') renderLaporan(area);
+      }
+    }
+  });
+}
+function _startUsersListener() {
+  db.collection('users').onSnapshot(snap => {
+    const arr = [];
+    snap.forEach(d => { arr.push({id: d.id, ...d.data()}); });
+    window._usersCache = arr;
+  });
+}
+async function _loadMeta() {
+  try {
+    const d = await db.collection('meta').doc('warung').get();
+    if(d.exists) {
+      const data = d.data();
+      if(data.categories) window._catCache = data.categories;
+      if(data.settings) window._settingsCache = data.settings;
+    }
+  } catch(e) { console.error('Meta load error:', e); }
+}
+async function _saveMeta() {
+  try {
+    await db.collection('meta').doc('warung').set({
+      categories: window._catCache, settings: window._settingsCache
+    });
+  } catch(e) { console.error('Meta save error:', e); }
+}
 
-function genId() { return Date.now().toString(36)+Math.random().toString(36).substr(2,4); }
+// ======================== DATA ACCESSORS ========================
+function getData(key, def) {
+  if(key === 'trans') return window._transCache;
+  if(key === 'users') return window._usersCache;
+  if(key === 'cats') return window._catCache;
+  if(key === 'settings') return window._settingsCache;
+  return def;
+}
+function setData(key, val) {
+  if(key === 'cats') { window._catCache = val; _saveMeta(); }
+  else if(key === 'settings') { window._settingsCache = val; _saveMeta(); }
+}
+function getTrans() { return window._transCache; }
+function setTrans(t) {}
+function getUsers() { return window._usersCache; }
+function setUsers(u) {}
+function getCats() { return window._catCache; }
+function setCats(c) { window._catCache = c; _saveMeta(); }
+function getSettings() { return window._settingsCache; }
+function setSettings(s) { window._settingsCache = s; _saveMeta(); }
+function getCurrentUser() {
+  try { const d = localStorage.getItem('oxm_current'); return d ? JSON.parse(d) : null; }
+  catch(e) { return null; }
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 8); }
 function today() { return new Date().toISOString().split('T')[0]; }
+function rupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 
-function rupiah(n) { return 'Rp '+Number(n).toLocaleString('id-ID'); }
-
-// ======================== AUTH ========================
+// ======================== AUTH (FIRESTORE) ========================
 let currentUser = null;
-
 function showRegister() {
-  document.getElementById('loginForm').style.display='none';
-  document.getElementById('registerForm').style.display='block';
-  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+  document.getElementById('loginError').style.display = 'none';
 }
 function showLogin() {
-  document.getElementById('loginForm').style.display='block';
-  document.getElementById('registerForm').style.display='none';
-  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('loginError').style.display = 'none';
 }
-
-function handleRegister() {
+async function handleRegister() {
   const name = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPassword').value.trim();
   const warung = document.getElementById('regWarung').value.trim();
-  
-  document.getElementById('loginError').style.display='none';
-  document.getElementById('loginSuccess').style.display='none';
-  
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginSuccess').style.display = 'none';
   if(!name||!email||!pass) { showLoginError('Harap isi semua field'); return; }
-  
-  const users = getUsers();
-  if(users.find(u=>u.email===email)) { showLoginError('Email sudah terdaftar'); return; }
-  
-  const newUser = { id:genId(), name, email, pass, role:'admin', warung:warung||'Warung Saya', createdAt:new Date().toISOString() };
-  users.push(newUser);
-  setUsers(users);
-  
-  document.getElementById('regName').value='';
-  document.getElementById('regEmail').value='';
-  document.getElementById('regPassword').value='';
-  document.getElementById('regWarung').value='';
-  
-  document.getElementById('loginSuccess').textContent = 'Akun berhasil dibuat! Silakan masuk.';
-  document.getElementById('loginSuccess').style.display = 'block';
-  showLogin();
+  if(window._usersCache.find(u=>u.email===email)) { showLoginError('Email sudah terdaftar'); return; }
+  try {
+    const ref = await db.collection('users').add({
+      name, email, pass, role: 'admin', warung: warung||'Warung Saya',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await ref.update({ id: ref.id });
+    document.getElementById('regName').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regWarung').value = '';
+    document.getElementById('loginSuccess').textContent = 'Akun berhasil dibuat! Silakan masuk.';
+    document.getElementById('loginSuccess').style.display = 'block';
+    showLogin();
+  } catch(e) { showLoginError('Gagal daftar: ' + e.message); }
 }
-
-function handleLogin() {
+async function handleLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPassword').value.trim();
-  document.getElementById('loginError').style.display='none';
-  document.getElementById('loginSuccess').style.display='none';
-  
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginSuccess').style.display = 'none';
   if(!email||!pass) { showLoginError('Isi email dan password'); return; }
-  
-  const users = getUsers();
-  if(users.length===0) {
-    // Auto-create admin
-    const admin = { id:genId(), name:'Admin Utama', email:'admin@oxmdrlrch.my.id', pass:'admin123', role:'admin', warung:'Warung Saya', createdAt:new Date().toISOString() };
-    users.push(admin);
-    setUsers(users);
+  const admins = window._usersCache.filter(u=>u.role==='admin');
+  if(admins.length === 0) {
+    try {
+      const ref = await db.collection('users').add({
+        name: 'Admin Utama', email: 'admin@oxmdrlrch.my.id', pass: 'admin123',
+        role: 'admin', warung: 'Warung Saya',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await ref.update({ id: ref.id });
+      await new Promise(r => setTimeout(r, 1000));
+    } catch(e) {}
   }
-  
+  const snap = await db.collection('users').get();
+  const users = [];
+  snap.forEach(d => users.push({id: d.id, ...d.data()}));
+  window._usersCache = users;
   const user = users.find(u=>u.email===email && u.pass===pass);
   if(!user) { showLoginError('Email atau password salah'); return; }
-  
   currentUser = user;
   localStorage.setItem('oxm_current', JSON.stringify(user));
-  document.getElementById('loginPage').style.display='none';
+  document.getElementById('loginPage').style.display = 'none';
   document.getElementById('app').classList.add('show');
   document.body.className = 'role-'+user.role;
   renderApp();
 }
-
 function handleLogout() {
   if(!confirm('Yakin mau keluar?')) return;
   currentUser = null;
   localStorage.removeItem('oxm_current');
   document.getElementById('app').classList.remove('show');
-  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('loginPage').style.display = 'flex';
 }
-
 function showLoginError(msg) {
   const el = document.getElementById('loginError');
   el.textContent = msg;
   el.style.display = 'block';
 }
 
-// Auto-login check
-(function(){
+// ======================== FIRESTORE WRITERS ========================
+async function _addTrans(t) {
+  try {
+    await db.collection('trans').add({
+      tanggal: t.tanggal, waktu: t.waktu, kategori: t.kategori,
+      jumlah: t.jumlah, keterangan: t.keterangan, tipe: t.tipe,
+      userId: t.userId, userName: t.userName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) { alert('Gagal simpan: ' + e.message); }
+}
+async function _updateTrans(id, data) {
+  try { await db.collection('trans').doc(id).update(data); }
+  catch(e) { alert('Gagal update: ' + e.message); }
+}
+async function _deleteTrans(id) {
+  try { await db.collection('trans').doc(id).delete(); }
+  catch(e) { alert('Gagal hapus: ' + e.message); }
+}
+async function _addUser(u) {
+  try {
+    const ref = await db.collection('users').add({
+      name: u.name, email: u.email, pass: u.pass,
+      role: u.role, warung: u.warung||'',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await ref.update({ id: ref.id });
+  } catch(e) { alert('Gagal buat akun: ' + e.message); }
+}
+async function _deleteUser(id) {
+  try { await db.collection('users').doc(id).delete(); }
+  catch(e) { alert('Gagal hapus: ' + e.message); }
+}
+
+// ======================== INIT LISTENERS & AUTO-LOGIN ========================
+_startTransListener();
+_startUsersListener();
+_loadMeta();
+
+onCacheReady(async () => {
+  const admins = window._usersCache.filter(u=>u.role==='admin');
+  if(admins.length === 0) {
+    try {
+      const ref = await db.collection('users').add({
+        name: 'Admin Utama', email: 'admin@oxmdrlrch.my.id', pass: 'admin123',
+        role: 'admin', warung: 'Warung Saya',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await ref.update({ id: ref.id });
+      await new Promise(r => setTimeout(r, 1000));
+    } catch(e) {}
+  }
   const saved = getCurrentUser();
   if(saved) {
-    const users = getUsers();
-    const user = users.find(u=>u.id===saved.id);
+    const user = window._usersCache.find(u=>u.id===saved.id);
     if(user) {
       currentUser = user;
-      document.getElementById('loginPage').style.display='none';
+      document.getElementById('loginPage').style.display = 'none';
       document.getElementById('app').classList.add('show');
       document.body.className = 'role-'+user.role;
+      renderApp();
       return;
     }
   }
-  // Auto-create default admin if empty
-  const users = getUsers();
-  if(users.length===0) {
-    users.push({ id:genId(), name:'Admin Utama', email:'admin@oxmdrlrch.my.id', pass:'admin123', role:'admin', warung:'Warung Saya', createdAt:new Date().toISOString() });
-    setUsers(users);
-  }
-})();
+});
+
+// ======================== REPLACED FUNCTIONS (FIRESTORE) ========================
+async function simpanTransaksi() {
+  const tgl = document.getElementById('trTgl').value;
+  const kat = document.getElementById('trKat').value;
+  const jml = document.getElementById('trJml').value;
+  const ket = document.getElementById('trKet').value;
+  if(!jml||Number(jml)<=0) { alert('Masukkan nominal yang valid'); return; }
+  await _addTrans({
+    tanggal: tgl,
+    waktu: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
+    kategori: kat, jumlah: Number(jml), keterangan: ket||'-',
+    tipe: tipeTransaksi, userId: currentUser.id, userName: currentUser.name
+  });
+  document.getElementById('trJml').value = '';
+  document.getElementById('trKet').value = '';
+  alert('Transaksi berhasil disimpan!');
+  showPage('riwayat');
+}
+async function saveEditTransaksi() {
+  const id = document.getElementById('editId').value;
+  await _updateTrans(id, {
+    tanggal: document.getElementById('editTgl').value,
+    kategori: document.getElementById('editKat').value,
+    jumlah: Number(document.getElementById('editJml').value),
+    keterangan: document.getElementById('editKet').value,
+    tipe: window.editTipeVal
+  });
+  closeModal('editModal');
+  showPage('riwayat');
+}
+async function hapusTransaksi(id) {
+  if(!confirm('Hapus transaksi ini?')) return;
+  await _deleteTrans(id);
+  showPage('riwayat');
+}
+async function buatKaryawan() {
+  const name = document.getElementById('karNama').value.trim();
+  const email = document.getElementById('karEmail').value.trim();
+  const pass = document.getElementById('karPass').value.trim();
+  if(!name||!email||!pass) { alert('Isi semua field'); return; }
+  if(window._usersCache.find(u=>u.email===email)) { alert('Email sudah digunakan'); return; }
+  await _addUser({ name, email, pass, role: 'karyawan', warung: '' });
+  document.getElementById('karNama').value='';
+  document.getElementById('karEmail').value='';
+  document.getElementById('karPass').value='';
+  renderKaryawan(document.getElementById('contentArea'));
+}
+async function hapusKaryawan(id) {
+  if(!confirm('Hapus karyawan ini?')) return;
+  await _deleteUser(id);
+  renderKaryawan(document.getElementById('contentArea'));
+}
+async function tambahKategori() {
+  const name = document.getElementById('catBaru').value.trim();
+  if(!name) return;
+  const cats = getCats();
+  cats.push(name);
+  setCats(cats);
+  document.getElementById('catBaru').value='';
+  renderKategori(document.getElementById('contentArea'));
+}
+function hapusKategori(idx) {
+  if(!confirm('Hapus kategori ini?')) return;
+  const cats = getCats().filter((_,i)=>i!==idx);
+  setCats(cats);
+  renderKategori(document.getElementById('contentArea'));
+}
+async function simpanPengaturan() {
+  const s = getSettings();
+  s.nama = document.getElementById('setNama').value;
+  s.email = document.getElementById('setEmail').value;
+  setSettings(s);
+  alert('Pengaturan disimpan');
+}
 
 // ======================== RENDER APP ========================
 const pageTitles = {
@@ -659,35 +856,6 @@ function setTipe(t) {
   else{b1.className='btn btn-outline';b2.className='btn btn-success'}
 }
 
-function simpanTransaksi() {
-  const tgl = document.getElementById('trTgl').value;
-  const kat = document.getElementById('trKat').value;
-  const jml = document.getElementById('trJml').value;
-  const ket = document.getElementById('trKet').value;
-  
-  if(!jml||Number(jml)<=0) { alert('Masukkan nominal yang valid'); return; }
-  
-  const trans = getTrans();
-  trans.push({
-    id: genId(),
-    tanggal: tgl,
-    waktu: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
-    kategori: kat,
-    jumlah: Number(jml),
-    keterangan: ket||'-',
-    tipe: tipeTransaksi,
-    userId: currentUser.id,
-    userName: currentUser.name,
-    createdAt: new Date().toISOString()
-  });
-  setTrans(trans);
-  
-  document.getElementById('trJml').value = '';
-  document.getElementById('trKet').value = '';
-  alert('Transaksi berhasil disimpan!');
-  showPage('riwayat');
-}
-
 // ======================== RIWAYAT ========================
 function renderRiwayat(area) {
   const allTrans = getTrans();
@@ -808,32 +976,8 @@ function editTipe(t) {
   else{b1.className='btn btn-outline';b2.className='btn btn-success'}
 }
 
-function saveEditTransaksi() {
-  const id = document.getElementById('editId').value;
-  const allTrans = getTrans();
-  const idx = allTrans.findIndex(x=>x.id===id);
-  if(idx===-1) return;
-  
-  allTrans[idx].tanggal = document.getElementById('editTgl').value;
-  allTrans[idx].kategori = document.getElementById('editKat').value;
-  allTrans[idx].jumlah = Number(document.getElementById('editJml').value);
-  allTrans[idx].keterangan = document.getElementById('editKet').value;
-  allTrans[idx].tipe = window.editTipeVal;
-  
-  setTrans(allTrans);
-  closeModal('editModal');
-  showPage('riwayat');
-}
-
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
-}
-
-function hapusTransaksi(id) {
-  if(!confirm('Hapus transaksi ini?')) return;
-  const allTrans = getTrans().filter(t=>t.id!==id);
-  setTrans(allTrans);
-  showPage('riwayat');
 }
 
 // ======================== LAPORAN ========================
@@ -945,32 +1089,6 @@ function renderKaryawan(area) {
   `;
 }
 
-function buatKaryawan() {
-  const name = document.getElementById('karNama').value.trim();
-  const email = document.getElementById('karEmail').value.trim();
-  const pass = document.getElementById('karPass').value.trim();
-  
-  if(!name||!email||!pass) { alert('Isi semua field'); return; }
-  
-  const users = getUsers();
-  if(users.find(u=>u.email===email)) { alert('Email sudah digunakan'); return; }
-  
-  users.push({ id:genId(), name, email, pass, role:'karyawan', warung:'', createdAt:new Date().toISOString() });
-  setUsers(users);
-  
-  document.getElementById('karNama').value='';
-  document.getElementById('karEmail').value='';
-  document.getElementById('karPass').value='';
-  renderKaryawan(document.getElementById('contentArea'));
-}
-
-function hapusKaryawan(id) {
-  if(!confirm('Hapus karyawan ini?')) return;
-  const users = getUsers().filter(u=>u.id!==id);
-  setUsers(users);
-  renderKaryawan(document.getElementById('contentArea'));
-}
-
 // ======================== KATEGORI (ADMIN ONLY) ========================
 function renderKategori(area) {
   const cats = getCats();
@@ -999,23 +1117,6 @@ function renderKategori(area) {
       </div>
     </div>
   `;
-}
-
-function tambahKategori() {
-  const name = document.getElementById('catBaru').value.trim();
-  if(!name) return;
-  const cats = getCats();
-  cats.push(name);
-  setCats(cats);
-  document.getElementById('catBaru').value='';
-  renderKategori(document.getElementById('contentArea'));
-}
-
-function hapusKategori(idx) {
-  if(!confirm('Hapus kategori ini?')) return;
-  const cats = getCats().filter((_,i)=>i!==idx);
-  setCats(cats);
-  renderKategori(document.getElementById('contentArea'));
 }
 
 // ======================== PENGATURAN ========================
@@ -1079,26 +1180,13 @@ function renderPengaturan(area) {
   `;
 }
 
-function simpanPengaturan() {
-  const s = getSettings();
-  s.nama = document.getElementById('setNama').value;
-  s.email = document.getElementById('setEmail').value;
-  setSettings(s);
-  alert('Pengaturan disimpan');
-}
 
-// ======================== INIT ========================
-// Register Service Worker
+
+// ======================== SERVICE WORKER ========================
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
-
-if(currentUser) {
-  document.getElementById('loginPage').style.display='none';
-  document.getElementById('app').classList.add('show');
-  document.body.className = 'role-'+currentUser.role;
-  renderApp();
-}
 </script>
+
 </body>
 </html>
