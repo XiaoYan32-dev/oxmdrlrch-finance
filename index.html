@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OxMDLRCH FINANCE</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#4a9df5">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:#f0f2f6;color:#333;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* LOGIN */
+.login-page{display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a2538,#131e2e);padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:40px 35px;width:380px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h2{font-size:24px;font-weight:700;margin-bottom:5px}
+.login-box p{font-size:13px;color:#999;margin-bottom:25px}
+.login-box .logo{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#4a9df5,#3578d4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;margin-bottom:15px}
+.login-box .form-group{margin-bottom:16px}
+.login-box .form-group label{font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:5px}
+.login-box .form-group input{width:100%;padding:11px 14px;border:1px solid #dde1e7;border-radius:8px;font-size:14px;outline:none;transition:.2s}
+.login-box .form-group input:focus{border-color:#4a9df5;box-shadow:0 0 0 3px rgba(74,157,245,.1)}
+.login-box .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;background:#4a9df5;color:#fff;margin-top:5px}
+.login-box .btn:hover{background:#3578d4}
+.login-box .link{text-align:center;margin-top:16px;font-size:13px;color:#999}
+.login-box .link a{color:#4a9df5;font-weight:600;cursor:pointer}
+.login-box .link a:hover{text-decoration:underline}
+.login-box .error{background:#fef2f2;color:#e74c3c;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:15px;display:none}
+.login-box .success-msg{background:#f0fdf4;color:#27ae60;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:15px;display:none}
+
+/* APP */
+.app{display:none}
+.app.show{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:240px;background:linear-gradient(180deg,#1a2538,#131e2e);color:#fff;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;transition:.3s}
+.sidebar .brand{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar .brand h3{font-size:16px;font-weight:700}
+.sidebar .brand h3 i{color:#4a9df5;margin-right:8px}
+.sidebar .brand small{font-size:11px;color:rgba(255,255,255,.4)}
+.sidebar .user-panel{padding:14px 20px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar .user-panel .avatar{width:34px;height:34px;border-radius:50%;background:#4a9df5;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-right:10px}
+.sidebar .user-panel .info p{font-size:13px;font-weight:600}
+.sidebar .user-panel .info small{font-size:10px;color:rgba(255,255,255,.4)}
+.sidebar .role-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:600;margin-top:2px}
+.sidebar .role-badge.admin{background:rgba(74,157,245,.2);color:#4a9df5}
+.sidebar .role-badge.karyawan{background:rgba(39,174,96,.2);color:#27ae60}
+.sidebar nav{padding:8px 0}
+.sidebar nav .nav-header{padding:8px 20px 4px;font-size:10px;text-transform:uppercase;color:rgba(255,255,255,.3);letter-spacing:1px;font-weight:600}
+.sidebar nav a{display:flex;align-items:center;padding:10px 20px;color:rgba(255,255,255,.6);font-size:13px;transition:.2s;border-left:3px solid transparent;cursor:pointer}
+.sidebar nav a:hover{background:rgba(255,255,255,.04);color:#fff}
+.sidebar nav a.active{background:rgba(74,157,245,.12);color:#4a9df5;border-left-color:#4a9df5}
+.sidebar nav a i{width:18px;font-size:13px;margin-right:10px;text-align:center}
+.sidebar nav a .badge{margin-left:auto;background:#f39c12;color:#fff;font-size:9px;padding:2px 6px;border-radius:8px}
+.sidebar nav a.karyawan-only{display:none}
+.sidebar nav a.admin-only{display:none}
+body.role-admin .sidebar nav a.admin-only{display:flex}
+body.role-karyawan .sidebar nav a.karyawan-only{display:flex}
+
+/* MAIN */
+.main{flex:1;margin-left:240px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:#fff;padding:0 22px;height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eef1f6;position:sticky;top:0;z-index:90}
+.topbar .breadcrumb{font-size:13px;color:#999}
+.topbar .breadcrumb span{color:#333;font-weight:600}
+.topbar .top-right{display:flex;align-items:center;gap:12px}
+.topbar .top-right .notif{position:relative;cursor:pointer}
+.topbar .top-right .notif i{font-size:16px;color:#888}
+.topbar .top-right .notif .dot{width:6px;height:6px;background:#e74c3c;border-radius:50%;position:absolute;top:-1px;right:-2px}
+.topbar .top-right .logout-btn{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:13px;font-weight:500;padding:6px 12px;border-radius:6px}
+.topbar .top-right .logout-btn:hover{background:#fef2f2}
+.menu-toggle{display:none;background:none;border:none;font-size:18px;color:#555;cursor:pointer;padding:5px}
+
+.content{flex:1;padding:18px 22px}
+.page{display:none}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:16px;border:1px solid #eef1f6}
+.card-header{padding:14px 18px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.card-header h3{font-size:14px;font-weight:600}
+.card-body{padding:18px}
+.card-footer{padding:12px 18px;border-top:1px solid #eef1f6;background:#fafbfc}
+
+/* GRID */
+.row{display:flex;flex-wrap:wrap;margin:0 -8px}
+.row>[class*=col-]{padding:0 8px}
+.col-2{flex:0 0 16.666%;max-width:16.666%}
+.col-3{flex:0 0 25%;max-width:25%}
+.col-4{flex:0 0 33.333%;max-width:33.333%}
+.col-6{flex:0 0 50%;max-width:50%}
+
+/* STAT */
+.small-box{border-radius:10px;padding:16px 18px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
+.small-box .inner h3{font-size:20px;font-weight:700;margin-bottom:2px}
+.small-box .inner p{font-size:12px;opacity:.85}
+.small-box .icon{position:absolute;right:12px;top:10px;font-size:34px;opacity:.15}
+.small-box .footer-link{margin-top:10px;border-top:1px solid rgba(255,255,255,.15);padding-top:8px;font-size:11px}
+.small-box .footer-link a{color:#fff}
+.bg-primary{background:linear-gradient(135deg,#4a9df5,#3578d4)}
+.bg-success{background:linear-gradient(135deg,#27ae60,#1e8449)}
+.bg-warning{background:linear-gradient(135deg,#f39c12,#d68910)}
+.bg-danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+.bg-info{background:linear-gradient(135deg,#17a2b8,#117a8b)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:500px}
+table th{padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:#888;font-weight:600;border-bottom:2px solid #eef1f6;white-space:nowrap}
+table td{padding:9px 10px;border-bottom:1px solid #f0f2f5;font-size:12px;white-space:nowrap}
+table tr:hover{background:#f8f9fb}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:500}
+.badge-success{background:#d4edda;color:#155724}
+.badge-warning{background:#fff3cd;color:#856404}
+.badge-danger{background:#f8d7da;color:#721c24}
+.badge-info{background:#d1ecf1;color:#0c5460}
+.badge-secondary{background:#e8ecf1;color:#666}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#666}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1px solid #dde1e7;border-radius:8px;font-size:13px;outline:none;transition:.2s;font-family:'Inter',sans-serif;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#4a9df5;box-shadow:0 0 0 3px rgba(74,157,245,.1)}
+.form-row{display:flex;gap:12px}
+.form-row .form-group{flex:1}
+
+/* BTN */
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:#4a9df5;color:#fff}
+.btn-primary:hover{background:#3578d4}
+.btn-success{background:#27ae60;color:#fff}
+.btn-success:hover{background:#1e8449}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-warning{background:#f39c12;color:#fff}
+.btn-info{background:#17a2b8;color:#fff}
+.btn-outline{background:transparent;border:1px solid #dde1e7;color:#666}
+.btn-outline:hover{background:#f8f9fb}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-block{width:100%;justify-content:center;padding:10px}
+.btn-group{display:flex;gap:4px}
+
+/* TABS */
+.nav-tabs{display:flex;border-bottom:2px solid #eef1f6;margin-bottom:16px;overflow-x:auto}
+.nav-tabs a{padding:7px 14px;font-size:12px;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;white-space:nowrap;cursor:pointer}
+.nav-tabs a.active,.nav-tabs a:hover{color:#4a9df5;border-bottom-color:#4a9df5}
+
+/* PROGRESS */
+.progress-item{margin-bottom:10px}
+.progress-item .label{display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px}
+.progress-item .label span:last-child{font-weight:600}
+.progress-bar{background:#eef1f6;height:6px;border-radius:4px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:4px}
+
+/* SWITCH */
+.switch{position:relative;display:inline-block;width:40px;height:20px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider-r{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;transition:.3s;border-radius:20px}
+.slider-r:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;transition:.3s;border-radius:50%}
+.switch input:checked+.slider-r{background:#4a9df5}
+.switch input:checked+.slider-r:before{transform:translateX(20px)}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f2f5;font-size:13px}
+
+/* CHART BARS */
+.chart-bars{display:flex;align-items:flex-end;height:130px;gap:8px;padding:0}
+.chart-bars .bar-wrap{flex:1;text-align:center}
+.chart-bars .bar-wrap .bar{background:linear-gradient(180deg,#4a9df5,#3578d4);border-radius:3px 3px 0 0;width:100%;min-height:4px}
+.chart-bars .bar-wrap .bar-label{font-size:9px;color:#999;margin-top:4px;display:block}
+
+/* OVERLAY */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px}
+.empty-state i{font-size:50px;color:#dde1e7;margin-bottom:15px}
+.empty-state h4{font-size:16px;color:#999;margin-bottom:5px}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,0,0,.5)}
+.modal.show{display:flex}
+.modal-box{background:#fff;border-radius:12px;width:420px;max-width:92vw;max-height:85vh;overflow-y:auto}
+.modal-box .modal-header{padding:14px 18px;border-bottom:1px solid #eef1f6;display:flex;justify-content:space-between;align-items:center}
+.modal-box .modal-header h3{font-size:15px;font-weight:600}
+.modal-box .modal-header .close{background:none;border:none;font-size:20px;cursor:pointer;color:#999}
+.modal-box .modal-body{padding:18px}
+.modal-box .modal-footer{padding:12px 18px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end}
+
+/* BOTTOM NAV */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e8ecf1;z-index:90;padding:4px 0 6px;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+.bottom-nav .bnav{display:flex;max-width:500px;margin:0 auto}
+.bottom-nav .bnav a{flex:1;text-align:center;padding:5px 0;color:#999;font-size:10px;cursor:pointer}
+.bottom-nav .bnav a i{display:block;font-size:17px;margin-bottom:1px}
+.bottom-nav .bnav a.active{color:#4a9df5}
+
+/* MOBILE */
+@media(max-width:768px){
+.sidebar{left:-240px;z-index:200}
+.sidebar.open{left:0}
+.sidebar-overlay.show{display:block}
+.main{margin-left:0}
+.menu-toggle{display:block}
+.bottom-nav{display:block}
+body{padding-bottom:60px}
+.col-3{flex:0 0 50%;max-width:50%}
+.col-4{flex:0 0 50%;max-width:50%}
+.content{padding:12px 14px}
+.form-row{flex-direction:column;gap:0}
+}
+@media(max-width:480px){
+.col-3,.col-4,.col-6{flex:0 0 100%;max-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN PAGE ==================== -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <div class="logo">O</div>
+    <h2>OxMDLRCH FINANCE</h2>
+    <p>Sistem Keuangan Warung</p>
+    <div class="error" id="loginError"></div>
+    <div class="success-msg" id="loginSuccess"></div>
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="admin@oxmdrlrch.my.id" value="admin@oxmdrlrch.my.id">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="********" value="admin123">
+      </div>
+      <button class="btn" onclick="handleLogin()">Masuk</button>
+      <div class="link">Belum punya akun? <a onclick="showRegister()">Daftar Admin Baru</a></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="regName" placeholder="Nama Anda">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="admin@oxmdrlrch.my.id">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="Minimal 6 karakter">
+      </div>
+      <div class="form-group">
+        <label>Nama Warung</label>
+        <input type="text" id="regWarung" placeholder="Warung Kencana Surya">
+      </div>
+      <button class="btn" onclick="handleRegister()">Daftar</button>
+      <div class="link">Sudah punya akun? <a onclick="showLogin()">Masuk</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div class="app" id="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="breadcrumb"><span id="pageTitle">Dashboard</span></div>
+      <div class="top-right">
+        <div class="notif"><i class="fas fa-bell"></i><span class="dot"></span></div>
+        <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+      </div>
+    </div>
+    <div class="content" id="contentArea"></div>
+  </div>
+  <div class="bottom-nav" id="bottomNav"></div>
+</div>
+
+<!-- ==================== MODAL EDIT TRANSAKSI ==================== -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit" style="color:#4a9df5"></i> Edit Transaksi</h3>
+      <button class="close" onclick="closeModal('editModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="editModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('editModal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveEditTransaksi()"><i class="fas fa-save"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================== DATA ========================
+function getData(key, def) {
+  try { const d = localStorage.getItem('oxm_'+key); return d ? JSON.parse(d) : def; }
+  catch(e) { return def; }
+}
+function setData(key, val) { localStorage.setItem('oxm_'+key, JSON.stringify(val)); }
+
+function getUsers() { return getData('users', []); }
+function setUsers(u) { setData('users', u); }
+function getTrans() { return getData('trans', []); }
+function setTrans(t) { setData('trans', t); }
+function getCats() { return getData('cats', ['BAPAK','CASH','Makanan','Minuman','Snack','Belanja','Transport','Tagihan','Lainnya']); }
+function setCats(c) { setData('cats', c); }
+function getSettings() { return getData('settings', {nama:'OxMDLRCH FINANCE', email:'notif@oxmdrlrch.my.id', zona:'Asia/Jakarta'}); }
+function setSettings(s) { setData('settings', s); }
+function getCurrentUser() { try {const d=localStorage.getItem('oxm_current'); return d?JSON.parse(d):null}catch(e){return null} }
+
+function genId() { return Date.now().toString(36)+Math.random().toString(36).substr(2,4); }
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function rupiah(n) { return 'Rp '+Number(n).toLocaleString('id-ID'); }
+
+// ======================== AUTH ========================
+let currentUser = null;
+
+function showRegister() {
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('registerForm').style.display='block';
+  document.getElementById('loginError').style.display='none';
+}
+function showLogin() {
+  document.getElementById('loginForm').style.display='block';
+  document.getElementById('registerForm').style.display='none';
+  document.getElementById('loginError').style.display='none';
+}
+
+function handleRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPassword').value.trim();
+  const warung = document.getElementById('regWarung').value.trim();
+  
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginSuccess').style.display='none';
+  
+  if(!name||!email||!pass) { showLoginError('Harap isi semua field'); return; }
+  
+  const users = getUsers();
+  if(users.find(u=>u.email===email)) { showLoginError('Email sudah terdaftar'); return; }
+  
+  const newUser = { id:genId(), name, email, pass, role:'admin', warung:warung||'Warung Saya', createdAt:new Date().toISOString() };
+  users.push(newUser);
+  setUsers(users);
+  
+  document.getElementById('regName').value='';
+  document.getElementById('regEmail').value='';
+  document.getElementById('regPassword').value='';
+  document.getElementById('regWarung').value='';
+  
+  document.getElementById('loginSuccess').textContent = 'Akun berhasil dibuat! Silakan masuk.';
+  document.getElementById('loginSuccess').style.display = 'block';
+  showLogin();
+}
+
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value.trim();
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginSuccess').style.display='none';
+  
+  if(!email||!pass) { showLoginError('Isi email dan password'); return; }
+  
+  const users = getUsers();
+  if(users.length===0) {
+    // Auto-create admin
+    const admin = { id:genId(), name:'Admin Utama', email:'admin@oxmdrlrch.my.id', pass:'admin123', role:'admin', warung:'Warung Saya', createdAt:new Date().toISOString() };
+    users.push(admin);
+    setUsers(users);
+  }
+  
+  const user = users.find(u=>u.email===email && u.pass===pass);
+  if(!user) { showLoginError('Email atau password salah'); return; }
+  
+  currentUser = user;
+  localStorage.setItem('oxm_current', JSON.stringify(user));
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').classList.add('show');
+  document.body.className = 'role-'+user.role;
+  renderApp();
+}
+
+function handleLogout() {
+  if(!confirm('Yakin mau keluar?')) return;
+  currentUser = null;
+  localStorage.removeItem('oxm_current');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginPage').style.display='flex';
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// Auto-login check
+(function(){
+  const saved = getCurrentUser();
+  if(saved) {
+    const users = getUsers();
+    const user = users.find(u=>u.id===saved.id);
+    if(user) {
+      currentUser = user;
+      document.getElementById('loginPage').style.display='none';
+      document.getElementById('app').classList.add('show');
+      document.body.className = 'role-'+user.role;
+      return;
+    }
+  }
+  // Auto-create default admin if empty
+  const users = getUsers();
+  if(users.length===0) {
+    users.push({ id:genId(), name:'Admin Utama', email:'admin@oxmdrlrch.my.id', pass:'admin123', role:'admin', warung:'Warung Saya', createdAt:new Date().toISOString() });
+    setUsers(users);
+  }
+})();
+
+// ======================== RENDER APP ========================
+const pageTitles = {
+  dashboard:'Dashboard', transaksi:'Catat Transaksi', riwayat:'Riwayat Transaksi',
+  laporan:'Laporan Keuangan', karyawan:'Manajemen Karyawan', kategori:'Kategori Transaksi', pengaturan:'Pengaturan'
+};
+
+const navAdmin = [
+  {section:'Menu Utama'},
+  {id:'dashboard', icon:'fa-tachometer-alt', label:'Dashboard', roles:['admin','karyawan']},
+  {id:'transaksi', icon:'fa-plus-circle', label:'Catat Transaksi', roles:['admin','karyawan']},
+  {id:'riwayat', icon:'fa-history', label:'Riwayat', roles:['admin','karyawan']},
+  {id:'laporan', icon:'fa-chart-bar', label:'Laporan', roles:['admin','karyawan']},
+  {section:'Master Data'},
+  {id:'karyawan', icon:'fa-users', label:'Karyawan', roles:['admin']},
+  {id:'kategori', icon:'fa-tags', label:'Kategori', roles:['admin']},
+  {section:'Lainnya'},
+  {id:'pengaturan', icon:'fa-cog', label:'Pengaturan', roles:['admin']},
+];
+
+const bnavItems = [
+  {id:'dashboard', icon:'fa-tachometer-alt', label:'Dashboard'},
+  {id:'transaksi', icon:'fa-plus-circle', label:'Catat'},
+  {id:'riwayat', icon:'fa-history', label:'Riwayat'},
+  {id:'laporan', icon:'fa-chart-bar', label:'Laporan'},
+  {id:'pengaturan', icon:'fa-cog', label:'Akun'},
+];
+
+let currentPage = 'dashboard';
+
+function renderApp() {
+  renderSidebar();
+  renderBottomNav();
+  showPage('dashboard');
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const u = currentUser;
+  let html = `
+    <div class="brand">
+      <h3><i class="fas fa-coins"></i> OxMDLRCH</h3>
+      <small>${u.role==='admin'?'Admin':'Karyawan'} — Warung</small>
+    </div>
+    <div class="user-panel">
+      <div class="avatar">${u.name.charAt(0).toUpperCase()}</div>
+      <div class="info">
+        <p>${u.name}</p>
+        <small>${u.email}</small>
+        <span class="role-badge ${u.role}">${u.role==='admin'?'Admin':'Karyawan'}</span>
+      </div>
+    </div>
+    <nav>`;
+  
+  for(const item of navAdmin) {
+    if(item.section) {
+      html += `<div class="nav-header">${item.section}</div>`;
+    } else {
+      const show = item.roles.includes(u.role);
+      if(!show) continue;
+      const cls = item.id===currentPage ? 'active' : '';
+      html += `<a class="${cls}" onclick='showPage("${item.id}")'><i class="fas ${item.icon}"></i> ${item.label}</a>`;
+    }
+  }
+  html += '</nav>';
+  sidebar.innerHTML = html;
+}
+
+function renderBottomNav() {
+  const nav = document.getElementById('bottomNav');
+  let html = '<div class="bnav">';
+  for(const item of bnavItems) {
+    const u = currentUser;
+    // Karyawan: bottom nav hanya Dashboard, Catat, Riwayat, Laporan
+    if(u.role==='karyawan' && item.id==='pengaturan') continue;
+    const active = item.id===currentPage ? 'active' : '';
+    html += `<a class="${active}" onclick='showPage("${item.id}")'><i class="fas ${item.icon}"></i><span>${item.label}</span></a>`;
+  }
+  html += '</div>';
+  nav.innerHTML = html;
+}
+
+function showPage(page) {
+  currentPage = page;
+  document.getElementById('pageTitle').textContent = pageTitles[page]||'Dashboard';
+  renderSidebar();
+  renderBottomNav();
+  
+  const area = document.getElementById('contentArea');
+  
+  switch(page) {
+    case 'dashboard': renderDashboard(area); break;
+    case 'transaksi': renderTransaksi(area); break;
+    case 'riwayat': renderRiwayat(area); break;
+    case 'laporan': renderLaporan(area); break;
+    case 'karyawan': renderKaryawan(area); break;
+    case 'kategori': renderKategori(area); break;
+    case 'pengaturan': renderPengaturan(area); break;
+  }
+  
+  if(window.innerWidth<=768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// ======================== DASHBOARD ========================
+function renderDashboard(area) {
+  const allTrans = getTrans();
+  const user = currentUser;
+  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  
+  // SALDO = Total ALL pemasukan - Total ALL pengeluaran (ever)
+  const totalIn = trans.filter(t=>t.tipe==='pemasukan').reduce((s,t)=>s+Number(t.jumlah),0);
+  const totalOut = trans.filter(t=>t.tipe==='pengeluaran').reduce((s,t)=>s+Number(t.jumlah),0);
+  const saldo = totalIn - totalOut;
+  
+  // SALDO BAPAK = Total ALL pemasukan kategori "BAPAK" (ever)
+  const bapakIn = trans.filter(t=>t.tipe==='pemasukan' && t.kategori==='BAPAK').reduce((s,t)=>s+Number(t.jumlah),0);
+  
+  // SALDO CASH = (Total pemasukan BAPAK + CASH) - Total ALL pengeluaran
+  const cashIn = trans.filter(t=>t.tipe==='pemasukan' && t.kategori==='CASH').reduce((s,t)=>s+Number(t.jumlah),0);
+  const saldoCash = (bapakIn + cashIn) - totalOut;
+  
+  const todayStr = today();
+  const todayTrans = trans.filter(t=>t.tanggal===todayStr);
+  
+  const weekTrans = trans.filter(t=>{
+    const d = new Date(t.tanggal);
+    const now = new Date();
+    const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
+    return d>=weekAgo;
+  });
+  
+  const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const weekData = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split('T')[0];
+    const dayTrans = weekTrans.filter(t=>t.tanggal===ds);
+    const total = dayTrans.reduce((s,t)=>s+Number(t.jumlah),0);
+    weekData.push({day:days[d.getDay()], total, label:ds});
+  }
+  const maxWeek = Math.max(...weekData.map(w=>w.total), 1);
+  
+  area.innerHTML = `
+    <div class="row">
+      <div class="col-3"><div class="small-box bg-primary"><div class="inner"><h3>${rupiah(saldo)}</h3><p>SALDO</p></div><div class="icon"><i class="fas fa-wallet"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-success"><div class="inner"><h3>${rupiah(saldoCash)}</h3><p>SALDO CASH</p></div><div class="icon"><i class="fas fa-coins"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-warning"><div class="inner"><h3>${rupiah(bapakIn)}</h3><p>SALDO BAPAK</p></div><div class="icon"><i class="fas fa-user-tie"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-info"><div class="inner"><h3>${todayTrans.length}</h3><p>Transaksi Hari Ini</p></div><div class="icon"><i class="fas fa-exchange-alt"></i></div></div></div>
+    </div>
+    <div class="row">
+      <div class="col-6"><div class="small-box bg-success" style="margin-bottom:0"><div class="inner"><h3>${rupiah(totalIn)}</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
+      <div class="col-6"><div class="small-box bg-danger" style="margin-bottom:0"><div class="inner"><h3>${rupiah(totalOut)}</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
+    </div>
+    <div class="row">
+      <div class="col-6">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-clock" style="color:#4a9df5"></i> Transaksi Terbaru</h3><a style="font-size:11px;color:#4a9df5;cursor:pointer" onclick="showPage('riwayat')">Semua &rarr;</a></div>
+          <div class="card-body" style="padding:10px 18px">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Kategori</th><th>Keterangan</th><th>Waktu</th><th>Nominal</th></tr></thead>
+              <tbody>
+                ${trans.slice(-5).reverse().map(t=>`
+                  <tr>
+                    <td><span class="badge badge-info">${t.kategori}</span></td>
+                    <td>${t.keterangan||'-'}</td>
+                    <td>${t.waktu||t.tanggal}</td>
+                    <td style="color:${t.tipe==='pemasukan'?'#27ae60':'#e74c3c'};font-weight:600">${t.tipe==='pemasukan'?'+':'-'}${rupiah(t.jumlah)}</td>
+                  </tr>
+                `).join('')}
+                ${trans.length===0?'<tr><td colspan="4" style="text-align:center;color:#999;padding:20px">Belum ada transaksi</td></tr>':''}
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-chart-line" style="color:#27ae60"></i> Grafik 7 Hari</h3></div>
+          <div class="card-body">
+            <div class="chart-bars">
+              ${weekData.map(w=>`
+                <div class="bar-wrap"><div class="bar" style="height:${Math.max((w.total/maxWeek)*120, 4)}px" title="${w.label}: ${rupiah(w.total)}"></div><span class="bar-label">${w.day}</span></div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ======================== TRANSAKSI ========================
+function renderTransaksi(area) {
+  area.innerHTML = `
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-plus-circle" style="color:#4a9df5"></i> Transaksi Baru</h3></div>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn btn-success" style="flex:1" onclick="setTipe('pemasukan')" id="btnMasuk"><i class="fas fa-arrow-up"></i> Pemasukan</button>
+          <button class="btn btn-outline" style="flex:1" onclick="setTipe('pengeluaran')" id="btnKeluar"><i class="fas fa-arrow-down"></i> Pengeluaran</button>
+        </div>
+        <div class="row">
+          <div class="col-4"><div class="form-group"><label>Tanggal</label><input type="date" id="trTgl" value="${today()}"></div></div>
+          <div class="col-4"><div class="form-group"><label>Kategori</label><select id="trKat">${getCats().map(c=>`<option>${c}</option>`).join('')}</select></div></div>
+          <div class="col-4"><div class="form-group"><label>Jumlah (Rp)</label><input type="number" id="trJml" value="" placeholder="Nominal"></div></div>
+        </div>
+        <div class="row">
+          <div class="col-12"><div class="form-group"><label>Keterangan</label><input type="text" id="trKet" placeholder="Deskripsi transaksi..."></div></div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="simpanTransaksi()"><i class="fas fa-save"></i> Simpan Transaksi</button>
+        <div style="margin-top:12px">
+          <p style="font-size:11px;color:#999;margin-bottom:6px">Quick nominal:</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${[5000,10000,15000,25000,50000,100000].map(n=>`<button class="btn btn-outline btn-sm" onclick="document.getElementById('trJml').value=${n}">${rupiah(n)}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+let tipeTransaksi = 'pemasukan';
+function setTipe(t) {
+  tipeTransaksi = t;
+  const b1 = document.getElementById('btnMasuk'), b2 = document.getElementById('btnKeluar');
+  if(t==='pemasukan'){b1.className='btn btn-success';b2.className='btn btn-outline'}
+  else{b1.className='btn btn-outline';b2.className='btn btn-success'}
+}
+
+function simpanTransaksi() {
+  const tgl = document.getElementById('trTgl').value;
+  const kat = document.getElementById('trKat').value;
+  const jml = document.getElementById('trJml').value;
+  const ket = document.getElementById('trKet').value;
+  
+  if(!jml||Number(jml)<=0) { alert('Masukkan nominal yang valid'); return; }
+  
+  const trans = getTrans();
+  trans.push({
+    id: genId(),
+    tanggal: tgl,
+    waktu: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
+    kategori: kat,
+    jumlah: Number(jml),
+    keterangan: ket||'-',
+    tipe: tipeTransaksi,
+    userId: currentUser.id,
+    userName: currentUser.name,
+    createdAt: new Date().toISOString()
+  });
+  setTrans(trans);
+  
+  document.getElementById('trJml').value = '';
+  document.getElementById('trKet').value = '';
+  alert('Transaksi berhasil disimpan!');
+  showPage('riwayat');
+}
+
+// ======================== RIWAYAT ========================
+function renderRiwayat(area) {
+  const allTrans = getTrans();
+  const user = currentUser;
+  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const sorted = [...trans].reverse();
+  
+  area.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-history" style="color:#4a9df5"></i> Riwayat Transaksi</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input type="date" id="filterTgl" style="padding:5px 10px;border:1px solid #dde1e7;border-radius:6px;font-size:12px;max-width:140px">
+          <button class="btn btn-outline btn-sm" onclick="filterRiwayat()"><i class="fas fa-filter"></i></button>
+          <button class="btn btn-success btn-sm" onclick="exportRiwayat()"><i class="fas fa-download"></i></button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap"><table id="riwayatTable">
+          <thead><tr><th>#</th><th>Tgl</th>${user.role==='admin'?'<th>Karyawan</th>':''}<th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Jenis</th><th>Aksi</th></tr></thead>
+          <tbody>
+            ${sorted.map((t,i)=>`
+              <tr>
+                <td>${i+1}</td>
+                <td>${t.tanggal}</td>
+                ${user.role==='admin'?`<td>${t.userName||'-'}</td>`:''}
+                <td><span class="badge badge-info">${t.kategori}</span></td>
+                <td>${t.keterangan}</td>
+                <td style="color:${t.tipe==='pemasukan'?'#27ae60':'#e74c3c'};font-weight:600">${t.tipe==='pemasukan'?'+':'-'}${rupiah(t.jumlah)}</td>
+                <td><span class="badge ${t.tipe==='pemasukan'?'badge-success':'badge-danger'}">${t.tipe==='pemasukan'?'Masuk':'Keluar'}</span></td>
+                <td><div class="btn-group"><button class="btn btn-info btn-sm" onclick="editTransaksi('${t.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="hapusTransaksi('${t.id}')"><i class="fas fa-trash"></i></button></div></td>
+              </tr>
+            `).join('')}
+            ${sorted.length===0?'<tr><td colspan="9" style="text-align:center;padding:30px;color:#999">Belum ada transaksi. <a style="color:#4a9df5;cursor:pointer" onclick="showPage(\'transaksi\')">Catat sekarang</a></td></tr>':''}
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card-footer">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#999;flex-wrap:wrap">
+          <span>Total: ${sorted.length} transaksi</span>
+          <span>Total: ${rupiah(sorted.reduce((s,t)=>s+Number(t.jumlah),0))}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function filterRiwayat() {
+  const tgl = document.getElementById('filterTgl').value;
+  if(!tgl) return;
+  const allTrans = getTrans();
+  const user = currentUser;
+  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const filtered = trans.filter(t=>t.tanggal===tgl).reverse();
+  
+  const tbody = document.querySelector('#riwayatTable tbody');
+  tbody.innerHTML = filtered.map((t,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${t.tanggal}</td>
+      ${user.role==='admin'?`<td>${t.userName||'-'}</td>`:''}
+      <td><span class="badge badge-info">${t.kategori}</span></td>
+      <td>${t.keterangan}</td>
+      <td style="color:${t.tipe==='pemasukan'?'#27ae60':'#e74c3c'};font-weight:600">${t.tipe==='pemasukan'?'+':'-'}${rupiah(t.jumlah)}</td>
+      <td><span class="badge ${t.tipe==='pemasukan'?'badge-success':'badge-danger'}">${t.tipe==='pemasukan'?'Masuk':'Keluar'}</span></td>
+      <td><div class="btn-group"><button class="btn btn-info btn-sm" onclick="editTransaksi('${t.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm" onclick="hapusTransaksi('${t.id}')"><i class="fas fa-trash"></i></button></div></td>
+    </tr>
+  `).join('');
+}
+
+function exportRiwayat() {
+  const allTrans = getTrans();
+  const user = currentUser;
+  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  // Simple CSV
+  let csv = 'Tanggal,Kategori,Keterangan,Jumlah,Tipe,Karyawan\n';
+  trans.forEach(t=>{
+    csv += `${t.tanggal},${t.kategori},${t.keterangan},${t.jumlah},${t.tipe},${t.userName||''}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'transaksi_oxmdrlrch.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ======================== EDIT & HAPUS TRANSAKSI ========================
+function editTransaksi(id) {
+  const allTrans = getTrans();
+  const t = allTrans.find(x=>x.id===id);
+  if(!t) return;
+  
+  document.getElementById('editModal').classList.add('show');
+  document.getElementById('editModalBody').innerHTML = `
+    <input type="hidden" id="editId" value="${t.id}">
+    <div class="row">
+      <div class="col-6"><div class="form-group"><label>Tanggal</label><input type="date" id="editTgl" value="${t.tanggal}"></div></div>
+      <div class="col-6"><div class="form-group"><label>Kategori</label><select id="editKat">${getCats().map(c=>`<option ${c===t.kategori?'selected':''}>${c}</option>`).join('')}</select></div></div>
+    </div>
+    <div class="row">
+      <div class="col-6"><div class="form-group"><label>Jumlah (Rp)</label><input type="number" id="editJml" value="${t.jumlah}"></div></div>
+      <div class="col-6"><div class="form-group"><label>Keterangan</label><input type="text" id="editKet" value="${t.keterangan}"></div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-success" onclick="editTipe('pemasukan')" id="editBtnMasuk"><i class="fas fa-arrow-up"></i> Pemasukan</button>
+      <button class="btn btn-outline" onclick="editTipe('pengeluaran')" id="editBtnKeluar"><i class="fas fa-arrow-down"></i> Pengeluaran</button>
+    </div>
+  `;
+  window.editTipeVal = t.tipe;
+  if(t.tipe==='pemasukan'){document.getElementById('editBtnMasuk').className='btn btn-success';document.getElementById('editBtnKeluar').className='btn btn-outline'}
+  else{document.getElementById('editBtnMasuk').className='btn btn-outline';document.getElementById('editBtnKeluar').className='btn btn-success'}
+}
+
+window.editTipeVal = 'pemasukan';
+function editTipe(t) {
+  window.editTipeVal = t;
+  const b1 = document.getElementById('editBtnMasuk'), b2 = document.getElementById('editBtnKeluar');
+  if(t==='pemasukan'){b1.className='btn btn-success';b2.className='btn btn-outline'}
+  else{b1.className='btn btn-outline';b2.className='btn btn-success'}
+}
+
+function saveEditTransaksi() {
+  const id = document.getElementById('editId').value;
+  const allTrans = getTrans();
+  const idx = allTrans.findIndex(x=>x.id===id);
+  if(idx===-1) return;
+  
+  allTrans[idx].tanggal = document.getElementById('editTgl').value;
+  allTrans[idx].kategori = document.getElementById('editKat').value;
+  allTrans[idx].jumlah = Number(document.getElementById('editJml').value);
+  allTrans[idx].keterangan = document.getElementById('editKet').value;
+  allTrans[idx].tipe = window.editTipeVal;
+  
+  setTrans(allTrans);
+  closeModal('editModal');
+  showPage('riwayat');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function hapusTransaksi(id) {
+  if(!confirm('Hapus transaksi ini?')) return;
+  const allTrans = getTrans().filter(t=>t.id!==id);
+  setTrans(allTrans);
+  showPage('riwayat');
+}
+
+// ======================== LAPORAN ========================
+function renderLaporan(area) {
+  const allTrans = getTrans();
+  const user = currentUser;
+  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  
+  const bulanIni = trans.filter(t=>{
+    const d = new Date(t.tanggal);
+    const now = new Date();
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  });
+  
+  const totalIn = bulanIni.filter(t=>t.tipe==='pemasukan').reduce((s,t)=>s+Number(t.jumlah),0);
+  const totalOut = bulanIni.filter(t=>t.tipe==='pengeluaran').reduce((s,t)=>s+Number(t.jumlah),0);
+  
+  // Per kategori
+  const catTotals = {};
+  bulanIni.filter(t=>t.tipe==='pengeluaran').forEach(t=>{
+    catTotals[t.kategori] = (catTotals[t.kategori]||0) + Number(t.jumlah);
+  });
+  const cats = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+  const maxCat = cats.length>0 ? cats[0][1] : 1;
+  
+  const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const bln = namaBulan[new Date().getMonth()]+' '+new Date().getFullYear();
+  
+  area.innerHTML = `
+    <div class="row">
+      <div class="col-4"><div class="small-box bg-success"><div class="inner"><h3>${rupiah(totalIn)}</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
+      <div class="col-4"><div class="small-box bg-danger"><div class="inner"><h3>${rupiah(totalOut)}</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
+      <div class="col-4"><div class="small-box bg-primary"><div class="inner"><h3>${rupiah(totalIn-totalOut)}</h3><p>Laba Bersih</p></div><div class="icon"><i class="fas fa-chart-pie"></i></div></div></div>
+    </div>
+    <div class="row">
+      <div class="col-6">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-chart-bar" style="color:#4a9df5"></i> Pengeluaran per Kategori</h3></div>
+          <div class="card-body">
+            ${cats.length===0?'<p style="color:#999;text-align:center;padding:20px">Belum ada data bulan ini</p>':
+            cats.map(([kat,val])=>`
+              <div class="progress-item">
+                <div class="label"><span>${kat}</span><span>${rupiah(val)}</span></div>
+                <div class="progress-bar"><div class="fill" style="width:${(val/maxCat)*100}%;background:#4a9df5"></div></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-info-circle" style="color:#17a2b8"></i> Ringkasan ${bln}</h3></div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-6"><p style="font-size:12px;color:#999">Total Transaksi</p><p style="font-size:16px;font-weight:600">${bulanIni.length}</p></div>
+              <div class="col-6"><p style="font-size:12px;color:#999">Rata-rata Harian</p><p style="font-size:16px;font-weight:600">${bulanIni.length>0?rupiah(Math.round((totalIn+totalOut)/bulanIni.length)):'Rp 0'}</p></div>
+            </div>
+            <div class="row" style="margin-top:12px">
+              <div class="col-6"><p style="font-size:12px;color:#999">Transaksi Masuk</p><p style="font-size:16px;font-weight:600;color:#27ae60">${bulanIni.filter(t=>t.tipe==='pemasukan').length}</p></div>
+              <div class="col-6"><p style="font-size:12px;color:#999">Transaksi Keluar</p><p style="font-size:16px;font-weight:600;color:#e74c3c">${bulanIni.filter(t=>t.tipe==='pengeluaran').length}</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ======================== KARYAWAN (ADMIN ONLY) ========================
+function renderKaryawan(area) {
+  const users = getUsers().filter(u=>u.role==='karyawan');
+  const allTrans = getTrans();
+  
+  area.innerHTML = `
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-user-plus" style="color:#4a9df5"></i> Buat Akun Karyawan</h3></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-4"><div class="form-group"><label>Nama Lengkap</label><input type="text" id="karNama" placeholder="Nama karyawan"></div></div>
+          <div class="col-4"><div class="form-group"><label>Email</label><input type="email" id="karEmail" placeholder="email@warung.com"></div></div>
+          <div class="col-4"><div class="form-group"><label>Password</label><input type="password" id="karPass" placeholder="Password"></div></div>
+        </div>
+        <button class="btn btn-primary" onclick="buatKaryawan()"><i class="fas fa-user-plus"></i> Buat Akun</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-users" style="color:#27ae60"></i> Daftar Karyawan</h3></div>
+      <div class="card-body">
+        ${users.length===0?'<div class="empty-state"><i class="fas fa-users"></i><h4>Belum ada karyawan</h4></div>':
+        `<div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>Transaksi</th><th>Total</th><th>Aksi</th></tr></thead>
+          <tbody>
+            ${users.map((u,i)=>{
+              const tr = allTrans.filter(t=>t.userId===u.id);
+              const total = tr.reduce((s,t)=>s+Number(t.jumlah),0);
+              return `<tr>
+                <td>${i+1}</td>
+                <td><div style="display:flex;align-items:center"><div style="width:26px;height:26px;border-radius:50%;background:#4a9df5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-right:8px">${u.name.charAt(0).toUpperCase()}</div>${u.name}</div></td>
+                <td>${u.email}</td>
+                <td>${tr.length}</td>
+                <td>${rupiah(total)}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="hapusKaryawan('${u.id}')"><i class="fas fa-trash"></i></button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table></div>`}
+      </div>
+    </div>
+  `;
+}
+
+function buatKaryawan() {
+  const name = document.getElementById('karNama').value.trim();
+  const email = document.getElementById('karEmail').value.trim();
+  const pass = document.getElementById('karPass').value.trim();
+  
+  if(!name||!email||!pass) { alert('Isi semua field'); return; }
+  
+  const users = getUsers();
+  if(users.find(u=>u.email===email)) { alert('Email sudah digunakan'); return; }
+  
+  users.push({ id:genId(), name, email, pass, role:'karyawan', warung:'', createdAt:new Date().toISOString() });
+  setUsers(users);
+  
+  document.getElementById('karNama').value='';
+  document.getElementById('karEmail').value='';
+  document.getElementById('karPass').value='';
+  renderKaryawan(document.getElementById('contentArea'));
+}
+
+function hapusKaryawan(id) {
+  if(!confirm('Hapus karyawan ini?')) return;
+  const users = getUsers().filter(u=>u.id!==id);
+  setUsers(users);
+  renderKaryawan(document.getElementById('contentArea'));
+}
+
+// ======================== KATEGORI (ADMIN ONLY) ========================
+function renderKategori(area) {
+  const cats = getCats();
+  
+  area.innerHTML = `
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-tag" style="color:#4a9df5"></i> Tambah Kategori</h3></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-6"><div class="form-group"><label>Nama Kategori</label><input type="text" id="catBaru" placeholder="Nama kategori baru"></div></div>
+          <div class="col-3"><div class="form-group"><label>&nbsp;</label><button class="btn btn-success btn-block" onclick="tambahKategori()"><i class="fas fa-plus"></i> Tambah</button></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-list" style="color:#27ae60"></i> Daftar Kategori</h3><span style="font-size:11px;color:#999">${cats.length} kategori</span></div>
+      <div class="card-body">
+        <div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Kategori</th><th>Aksi</th></tr></thead>
+          <tbody>
+            ${cats.map((c,i)=>`
+              <tr><td>${i+1}</td><td><i class="fas fa-tag" style="color:#4a9df5;margin-right:6px"></i> ${c}</td><td><button class="btn btn-danger btn-sm" onclick="hapusKategori(${i})"><i class="fas fa-trash"></i></button></td></tr>
+            `).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  `;
+}
+
+function tambahKategori() {
+  const name = document.getElementById('catBaru').value.trim();
+  if(!name) return;
+  const cats = getCats();
+  cats.push(name);
+  setCats(cats);
+  document.getElementById('catBaru').value='';
+  renderKategori(document.getElementById('contentArea'));
+}
+
+function hapusKategori(idx) {
+  if(!confirm('Hapus kategori ini?')) return;
+  const cats = getCats().filter((_,i)=>i!==idx);
+  setCats(cats);
+  renderKategori(document.getElementById('contentArea'));
+}
+
+// ======================== PENGATURAN ========================
+function renderPengaturan(area) {
+  const s = getSettings();
+  
+  if(currentUser.role==='karyawan') {
+    area.innerHTML = `
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-user" style="color:#4a9df5"></i> Profil Saya</h3></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;margin-bottom:16px">
+            <div style="width:50px;height:50px;border-radius:50%;background:#27ae60;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;margin-right:14px">${currentUser.name.charAt(0).toUpperCase()}</div>
+            <div><p style="font-size:15px;font-weight:600">${currentUser.name}</p><p style="font-size:12px;color:#999">${currentUser.email}</p><span class="badge badge-success">Karyawan</span></div>
+          </div>
+          <p style="font-size:12px;color:#999">Terdaftar sejak ${new Date(currentUser.createdAt).toLocaleDateString('id-ID')}</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  area.innerHTML = `
+    <div class="row">
+      <div class="col-6">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-user-cog" style="color:#4a9df5"></i> Profil Admin</h3></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;margin-bottom:16px">
+              <div style="width:50px;height:50px;border-radius:50%;background:#4a9df5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;margin-right:14px">${currentUser.name.charAt(0).toUpperCase()}</div>
+              <div><p style="font-size:15px;font-weight:600">${currentUser.name}</p><p style="font-size:12px;color:#999">${currentUser.email}</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-shield-alt" style="color:#f39c12"></i> Keamanan</h3></div>
+          <div class="card-body">
+            <div class="form-group"><label>Password Saat Ini</label><input type="password" value="********" disabled></div>
+            <button class="btn btn-info"><i class="fas fa-sync"></i> Ganti Password</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-cog" style="color:#999"></i> Pengaturan</h3></div>
+          <div class="card-body">
+            <div class="form-group"><label>Nama Usaha</label><input type="text" id="setNama" value="${s.nama}"></div>
+            <div class="form-group"><label>Email Notif</label><input type="email" id="setEmail" value="${s.email}"></div>
+            <button class="btn btn-primary" onclick="simpanPengaturan()"><i class="fas fa-save"></i> Simpan</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3><i class="fas fa-bell" style="color:#27ae60"></i> Notifikasi</h3></div>
+          <div class="card-body">
+            <div class="toggle-row"><span>Transaksi Baru</span><label class="switch"><input type="checkbox" checked><span class="slider-r"></span></label></div>
+            <div class="toggle-row"><span>Backup Otomatis</span><label class="switch"><input type="checkbox" checked><span class="slider-r"></span></label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function simpanPengaturan() {
+  const s = getSettings();
+  s.nama = document.getElementById('setNama').value;
+  s.email = document.getElementById('setEmail').value;
+  setSettings(s);
+  alert('Pengaturan disimpan');
+}
+
+// ======================== INIT ========================
+// Register Service Worker
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+if(currentUser) {
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').classList.add('show');
+  document.body.className = 'role-'+currentUser.role;
+  renderApp();
+}
+</script>
+</body>
+</html>
