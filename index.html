@@ -981,43 +981,164 @@ function closeModal(id) {
 }
 
 // ======================== LAPORAN ========================
+function getDateRangeLaporan(mode, customStart, customEnd) {
+  const now = new Date();
+  let start, end;
+  
+  switch(mode) {
+    case 'hari': // Kemarin
+      start = new Date(now); start.setDate(now.getDate()-1);
+      end = new Date(now); end.setDate(now.getDate()-1);
+      break;
+    case 'minggu': // Minggu Ini
+      const day = now.getDay();
+      start = new Date(now); start.setDate(now.getDate() - (day===0?6:day-1));
+      end = new Date(now);
+      break;
+    case 'minggu_lalu': // Minggu Kemarin
+      const d2 = now.getDay();
+      const monThis = new Date(now); monThis.setDate(now.getDate() - (d2===0?6:d2-1));
+      start = new Date(monThis); start.setDate(monThis.getDate()-7);
+      end = new Date(monThis); end.setDate(monThis.getDate()-1);
+      break;
+    case 'bulan': // Bulan Ini
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now);
+      break;
+    case 'custom':
+      start = new Date(customStart);
+      end = new Date(customEnd);
+      break;
+    default:
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now);
+  }
+  
+  const fmt = d => d.toISOString().split('T')[0];
+  return { start: fmt(start), end: fmt(end) };
+}
+
 function renderLaporan(area) {
   const allTrans = getTrans();
   const user = currentUser;
   const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
   
-  const bulanIni = trans.filter(t=>{
-    const d = new Date(t.tanggal);
-    const now = new Date();
-    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
-  });
+  const mode = document.getElementById('laporanMode')?.value || 'bulan';
+  const customStart = document.getElementById('laporanStart')?.value || '';
+  const customEnd = document.getElementById('laporanEnd')?.value || '';
   
-  const totalIn = bulanIni.filter(t=>t.tipe==='pemasukan').reduce((s,t)=>s+Number(t.jumlah),0);
-  const totalOut = bulanIni.filter(t=>t.tipe==='pengeluaran').reduce((s,t)=>s+Number(t.jumlah),0);
+  const range = getDateRangeLaporan(mode, customStart, customEnd);
+  
+  const filtered = trans.filter(t=>t.tanggal>=range.start && t.tanggal<=range.end);
+  const totalIn = filtered.filter(t=>t.tipe==='pemasukan').reduce((s,t)=>s+Number(t.jumlah),0);
+  const totalOut = filtered.filter(t=>t.tipe==='pengeluaran').reduce((s,t)=>s+Number(t.jumlah),0);
+  const saldo = totalIn - totalOut;
+  
+  // SALDO BAPAK
+  const bapakIn = filtered.filter(t=>t.tipe==='pemasukan' && t.kategori==='BAPAK').reduce((s,t)=>s+Number(t.jumlah),0);
+  // SALDO CASH
+  const cashIn = filtered.filter(t=>t.tipe==='pemasukan' && t.kategori==='CASH').reduce((s,t)=>s+Number(t.jumlah),0);
+  const saldoCash = (bapakIn + cashIn) - totalOut;
   
   // Per kategori
   const catTotals = {};
-  bulanIni.filter(t=>t.tipe==='pengeluaran').forEach(t=>{
+  filtered.filter(t=>t.tipe==='pengeluaran').forEach(t=>{
     catTotals[t.kategori] = (catTotals[t.kategori]||0) + Number(t.jumlah);
   });
   const cats = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
   const maxCat = cats.length>0 ? cats[0][1] : 1;
   
+  // Grafik 7 hari (dari range)
+  const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const rangeStart = new Date(range.start);
+  const rangeEnd = new Date(range.end);
+  const diffDays = Math.max(Math.ceil((rangeEnd-rangeStart)/(1000*60*60*24)) + 1, 1);
+  const showDays = Math.min(diffDays, 7);
+  const weekData = [];
+  for(let i=showDays-1;i>=0;i--){
+    const d = new Date(rangeEnd); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split('T')[0];
+    const dayTrans = filtered.filter(t=>t.tanggal===ds);
+    const total = dayTrans.reduce((s,t)=>s+Number(t.jumlah),0);
+    weekData.push({day:days[d.getDay()], total, label:ds});
+  }
+  const maxWeek = Math.max(...weekData.map(w=>w.total), 1);
+  
   const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const bln = namaBulan[new Date().getMonth()]+' '+new Date().getFullYear();
   
+  // Label range
+  const rangeLabels = {
+    hari: 'Kemarin',
+    minggu: 'Minggu Ini',
+    minggu_lalu: 'Minggu Kemarin',
+    bulan: 'Bulan Ini',
+    custom: 'Kustom'
+  };
+  
   area.innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body" style="padding:12px 18px">
+        <div class="row" style="align-items:end">
+          <div class="col-3">
+            <div class="form-group" style="margin:0">
+              <label style="font-size:11px;color:#999">Periode</label>
+              <select id="laporanMode" onchange="toggleLaporanRange();renderLaporan(document.getElementById('contentArea'))">
+                <option value="hari" ${mode==='hari'?'selected':''}>Kemarin</option>
+                <option value="minggu" ${mode==='minggu'?'selected':''}>Minggu Ini</option>
+                <option value="minggu_lalu" ${mode==='minggu_lalu'?'selected':''}>Minggu Kemarin</option>
+                <option value="bulan" ${mode==='bulan'?'selected':''}>Bulan Ini</option>
+                <option value="custom" ${mode==='custom'?'selected':''}>Kustom</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-3" id="laporanRangeStart" style="display:${mode==='custom'?'block':'none'}">
+            <div class="form-group" style="margin:0">
+              <label style="font-size:11px;color:#999">Dari</label>
+              <input type="date" id="laporanStart" value="${customStart||range.start}" onchange="renderLaporan(document.getElementById('contentArea'))">
+            </div>
+          </div>
+          <div class="col-3" id="laporanRangeEnd" style="display:${mode==='custom'?'block':'none'}">
+            <div class="form-group" style="margin:0">
+              <label style="font-size:11px;color:#999">Sampai</label>
+              <input type="date" id="laporanEnd" value="${customEnd||range.end}" onchange="renderLaporan(document.getElementById('contentArea'))">
+            </div>
+          </div>
+          <div class="col-3" style="text-align:right">
+            <span style="font-size:11px;color:#999">${range.start} — ${range.end}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <div class="row">
-      <div class="col-4"><div class="small-box bg-success"><div class="inner"><h3>${rupiah(totalIn)}</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
-      <div class="col-4"><div class="small-box bg-danger"><div class="inner"><h3>${rupiah(totalOut)}</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
-      <div class="col-4"><div class="small-box bg-primary"><div class="inner"><h3>${rupiah(totalIn-totalOut)}</h3><p>Laba Bersih</p></div><div class="icon"><i class="fas fa-chart-pie"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-primary"><div class="inner"><h3>${rupiah(saldo)}</h3><p>SALDO</p></div><div class="icon"><i class="fas fa-wallet"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-success"><div class="inner"><h3>${rupiah(saldoCash)}</h3><p>SALDO CASH</p></div><div class="icon"><i class="fas fa-coins"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-warning"><div class="inner"><h3>${rupiah(bapakIn)}</h3><p>SALDO BAPAK</p></div><div class="icon"><i class="fas fa-user-tie"></i></div></div></div>
+      <div class="col-3"><div class="small-box bg-info"><div class="inner"><h3>${filtered.length}</h3><p>Total Transaksi</p></div><div class="icon"><i class="fas fa-exchange-alt"></i></div></div></div>
+    </div>
+    <div class="row">
+      <div class="col-6"><div class="small-box bg-success" style="margin-bottom:0"><div class="inner"><h3>${rupiah(totalIn)}</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
+      <div class="col-6"><div class="small-box bg-danger" style="margin-bottom:0"><div class="inner"><h3>${rupiah(totalOut)}</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
     </div>
     <div class="row">
       <div class="col-6">
         <div class="card">
+          <div class="card-header"><h3><i class="fas fa-chart-line" style="color:#27ae60"></i> Grafik ${showDays} Hari</h3></div>
+          <div class="card-body">
+            <div class="chart-bars">
+              ${weekData.map(w=>`
+                <div class="bar-wrap"><div class="bar" style="height:${Math.max((w.total/maxWeek)*120, 4)}px" title="${w.label}: ${rupiah(w.total)}"></div><span class="bar-label">${w.day}</span></div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card">
           <div class="card-header"><h3><i class="fas fa-chart-bar" style="color:#4a9df5"></i> Pengeluaran per Kategori</h3></div>
           <div class="card-body">
-            ${cats.length===0?'<p style="color:#999;text-align:center;padding:20px">Belum ada data bulan ini</p>':
+            ${cats.length===0?'<p style="color:#999;text-align:center;padding:20px">Belum ada data</p>':
             cats.map(([kat,val])=>`
               <div class="progress-item">
                 <div class="label"><span>${kat}</span><span>${rupiah(val)}</span></div>
@@ -1027,23 +1148,37 @@ function renderLaporan(area) {
           </div>
         </div>
       </div>
-      <div class="col-6">
+    </div>
+    <div class="row">
+      <div class="col-12">
         <div class="card">
-          <div class="card-header"><h3><i class="fas fa-info-circle" style="color:#17a2b8"></i> Ringkasan ${bln}</h3></div>
+          <div class="card-header"><h3><i class="fas fa-info-circle" style="color:#17a2b8"></i> Ringkasan ${rangeLabels[mode]||'Laporan'}</h3></div>
           <div class="card-body">
             <div class="row">
-              <div class="col-6"><p style="font-size:12px;color:#999">Total Transaksi</p><p style="font-size:16px;font-weight:600">${bulanIni.length}</p></div>
-              <div class="col-6"><p style="font-size:12px;color:#999">Rata-rata Harian</p><p style="font-size:16px;font-weight:600">${bulanIni.length>0?rupiah(Math.round((totalIn+totalOut)/bulanIni.length)):'Rp 0'}</p></div>
+              <div class="col-4"><p style="font-size:12px;color:#999">Total Transaksi</p><p style="font-size:16px;font-weight:600">${filtered.length}</p></div>
+              <div class="col-4"><p style="font-size:12px;color:#999">Rata-rata Harian</p><p style="font-size:16px;font-weight:600">${filtered.length>0?rupiah(Math.round((totalIn+totalOut)/filtered.length)):'Rp 0'}</p></div>
+              <div class="col-4"><p style="font-size:12px;color:#999">Transaksi per Hari</p><p style="font-size:16px;font-weight:600">${filtered.length>0?Math.round(filtered.length/showDays):'0'}</p></div>
             </div>
             <div class="row" style="margin-top:12px">
-              <div class="col-6"><p style="font-size:12px;color:#999">Transaksi Masuk</p><p style="font-size:16px;font-weight:600;color:#27ae60">${bulanIni.filter(t=>t.tipe==='pemasukan').length}</p></div>
-              <div class="col-6"><p style="font-size:12px;color:#999">Transaksi Keluar</p><p style="font-size:16px;font-weight:600;color:#e74c3c">${bulanIni.filter(t=>t.tipe==='pengeluaran').length}</p></div>
+              <div class="col-4"><p style="font-size:12px;color:#999">Transaksi Masuk</p><p style="font-size:16px;font-weight:600;color:#27ae60">${filtered.filter(t=>t.tipe==='pemasukan').length}</p></div>
+              <div class="col-4"><p style="font-size:12px;color:#999">Transaksi Keluar</p><p style="font-size:16px;font-weight:600;color:#e74c3c">${filtered.filter(t=>t.tipe==='pengeluaran').length}</p></div>
+              <div class="col-4"><p style="font-size:12px;color:#999">Range</p><p style="font-size:14px;font-weight:600">${range.start} — ${range.end}</p></div>
             </div>
           </div>
         </div>
       </div>
     </div>
   `;
+}
+
+function toggleLaporanRange() {
+  const mode = document.getElementById('laporanMode')?.value;
+  const startDiv = document.getElementById('laporanRangeStart');
+  const endDiv = document.getElementById('laporanRangeEnd');
+  if(startDiv && endDiv) {
+    startDiv.style.display = mode==='custom' ? 'block' : 'none';
+    endDiv.style.display = mode==='custom' ? 'block' : 'none';
+  }
 }
 
 // ======================== KARYAWAN (ADMIN ONLY) ========================
