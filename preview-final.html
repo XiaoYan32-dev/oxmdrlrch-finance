@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OxMDLRCH FINANCE — Preview Final</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f0f2f6;color:#333;overflow-x:hidden}
+.preview-header{background:linear-gradient(135deg,#1a2538,#131e2e);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.preview-header h2{font-size:16px;font-weight:700}
+.preview-header h2 i{color:#4a9df5;margin-right:8px}
+.preview-header small{font-size:11px;color:rgba(255,255,255,.4)}
+.menu-tabs{display:flex;background:#fff;border-bottom:2px solid #eef1f6;overflow-x:auto;position:sticky;top:53px;z-index:99}
+.menu-tabs a{padding:10px 14px;font-size:12px;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;cursor:pointer;transition:.2s;flex-shrink:0}
+.menu-tabs a.active,.menu-tabs a:hover{color:#4a9df5;border-bottom-color:#4a9df5}
+.menu-tabs a i{margin-right:5px}
+.preview-content{padding:18px 22px;max-width:1200px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:16px;border:1px solid #eef1f6}
+.card-header{padding:14px 18px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.card-header h3{font-size:14px;font-weight:600}
+.card-body{padding:18px}
+.card-footer{padding:12px 18px;border-top:1px solid #eef1f6;background:#fafbfc}
+.row{display:flex;flex-wrap:wrap;margin:0 -8px}
+.row>[class*=col-]{padding:0 8px}
+.col-3{flex:0 0 25%;max-width:25%}
+.col-4{flex:0 0 33.333%;max-width:33.333%}
+.col-6{flex:0 0 50%;max-width:50%}
+.col-12{flex:0 0 100%;max-width:100%}
+.small-box{border-radius:10px;padding:16px 18px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
+.small-box .inner h3{font-size:20px;font-weight:700;margin-bottom:2px}
+.small-box .inner p{font-size:12px;opacity:.85}
+.small-box .icon{position:absolute;right:12px;top:10px;font-size:34px;opacity:.15}
+.bg-primary{background:linear-gradient(135deg,#4a9df5,#3578d4)}
+.bg-success{background:linear-gradient(135deg,#27ae60,#1e8449)}
+.bg-warning{background:linear-gradient(135deg,#f39c12,#d68910)}
+.bg-danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+.bg-info{background:linear-gradient(135deg,#17a2b8,#117a8b)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+table th{padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;color:#888;font-weight:600;border-bottom:2px solid #eef1f6;white-space:nowrap}
+table td{padding:9px 10px;border-bottom:1px solid #f0f2f5;font-size:12px;white-space:nowrap}
+table tr:hover{background:#f8f9fb}
+.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:500}
+.badge-success{background:#d4edda;color:#155724}
+.badge-warning{background:#fff3cd;color:#856404}
+.badge-danger{background:#f8d7da;color:#721c24}
+.badge-info{background:#d1ecf1;color:#0c5460}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#666}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1px solid #dde1e7;border-radius:8px;font-size:13px;outline:none;transition:.2s;font-family:'Inter',sans-serif;background:#fff}
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:#4a9df5;color:#fff}
+.btn-success{background:#27ae60;color:#fff}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-info{background:#17a2b8;color:#fff}
+.btn-outline{background:transparent;border:1px solid #dde1e7;color:#666}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-block{width:100%;justify-content:center;padding:10px}
+.btn-group{display:flex;gap:4px}
+.progress-item{margin-bottom:10px}
+.progress-item .label{display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px}
+.progress-item .label span:last-child{font-weight:600}
+.progress-bar{background:#eef1f6;height:6px;border-radius:4px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:4px}
+.chart-bars{display:flex;align-items:flex-end;height:130px;gap:8px;padding:0}
+.chart-bars .bar-wrap{flex:1;text-align:center}
+.chart-bars .bar-wrap .bar{background:linear-gradient(180deg,#4a9df5,#3578d4);border-radius:3px 3px 0 0;width:100%;min-height:4px;transition:.3s}
+.chart-bars .bar-wrap .bar-label{font-size:9px;color:#999;margin-top:4px;display:block}
+.empty-state{text-align:center;padding:40px 20px}
+.empty-state i{font-size:50px;color:#dde1e7;margin-bottom:15px}
+.empty-state h4{font-size:16px;color:#999;margin-bottom:5px}
+.rupiah{font-weight:600}
+.section-badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:10px;font-weight:600;margin-bottom:12px;background:rgba(74,157,245,.12);color:#4a9df5}
+.preview-label{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.15);color:#fff;font-size:9px;padding:2px 8px;border-radius:4px;backdrop-filter:blur(4px)}
+@media(max-width:768px){
+  .col-3{flex:0 0 50%;max-width:50%}
+  .col-4{flex:0 0 50%;max-width:50%}
+  .col-6{flex:0 0 100%;max-width:100%}
+  .menu-tabs a{padding:8px 10px;font-size:10px}
+  .preview-content{padding:12px 14px}
+}
+</style>
+</head>
+<body>
+
+<div class="preview-header">
+  <div>
+    <h2><i class="fas fa-coins"></i> OxMDLRCH FINANCE</h2>
+    <small>Preview Final — Semua Menu</small>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:11px;color:rgba(255,255,255,.5)">👤 Teguh (Admin)</span>
+  </div>
+</div>
+
+<div class="menu-tabs" id="menuTabs">
+  <a class="active" onclick="showTab('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+  <a onclick="showTab('transaksi')"><i class="fas fa-plus-circle"></i> Transaksi</a>
+  <a onclick="showTab('riwayat')"><i class="fas fa-history"></i> Riwayat</a>
+  <a onclick="showTab('laporan')"><i class="fas fa-chart-bar"></i> Laporan</a>
+  <a onclick="showTab('laporan2')"><i class="fas fa-filter"></i> Laporan (Filter)</a>
+  <a onclick="showTab('karyawan')"><i class="fas fa-users"></i> Karyawan</a>
+  <a onclick="showTab('kategori')"><i class="fas fa-tags"></i> Kategori</a>
+  <a onclick="showTab('pengaturan')"><i class="fas fa-cog"></i> Pengaturan</a>
+</div>
+
+<div class="preview-content">
+
+<!-- ===================== DASHBOARD ===================== -->
+<div class="page active" id="page-dashboard">
+  <div class="row">
+    <div class="col-3"><div class="small-box bg-primary"><div class="inner"><h3>Rp 12.450.000</h3><p>SALDO</p></div><div class="icon"><i class="fas fa-wallet"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-success"><div class="inner"><h3>Rp 8.230.000</h3><p>SALDO CASH</p></div><div class="icon"><i class="fas fa-coins"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-warning"><div class="inner"><h3>Rp 3.500.000</h3><p>SALDO BAPAK</p></div><div class="icon"><i class="fas fa-user-tie"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-info"><div class="inner"><h3>12</h3><p>Transaksi Hari Ini</p></div><div class="icon"><i class="fas fa-exchange-alt"></i></div></div></div>
+  </div>
+  <div class="row">
+    <div class="col-6"><div class="small-box bg-success" style="margin-bottom:0"><div class="inner"><h3>Rp 18.750.000</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
+    <div class="col-6"><div class="small-box bg-danger" style="margin-bottom:0"><div class="inner"><h3>Rp 6.300.000</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-clock" style="color:#4a9df5"></i> Transaksi Terbaru</h3><a style="font-size:11px;color:#4a9df5;cursor:pointer">Semua &rarr;</a></div>
+        <div class="card-body" style="padding:10px 18px">
+          <div class="table-wrap"><table>
+            <thead><tr><th>Kategori</th><th>Keterangan</th><th>Waktu</th><th>Nominal</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-info">BAPAK</span></td><td>Uang jajan mingguan</td><td>14:30</td><td style="color:#27ae60;font-weight:600">+Rp 500.000</td></tr>
+              <tr><td><span class="badge badge-warning">LISTRIK</span></td><td>Bayar token</td><td>13:15</td><td style="color:#e74c3c;font-weight:600">-Rp 250.000</td></tr>
+              <tr><td><span class="badge badge-info">MAKANAN</span></td><td>Beli bahan warung</td><td>10:00</td><td style="color:#e74c3c;font-weight:600">-Rp 85.000</td></tr>
+              <tr><td><span class="badge badge-success">CASH</span></td><td>Pembayaran pelanggan</td><td>09:20</td><td style="color:#27ae60;font-weight:600">+Rp 150.000</td></tr>
+              <tr><td><span class="badge badge-secondary">BAPAK</span></td><td>Jatah bulanan</td><td>08:00</td><td style="color:#27ae60;font-weight:600">+Rp 1.000.000</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-chart-line" style="color:#27ae60"></i> Grafik 7 Hari</h3></div>
+        <div class="card-body">
+          <div class="chart-bars">
+            <div class="bar-wrap"><div class="bar" style="height:80px" title="Sen: Rp 2.1jt"></div><span class="bar-label">Sen</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:45px" title="Sel: Rp 1.2jt"></div><span class="bar-label">Sel</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:120px" title="Rab: Rp 3.5jt"></div><span class="bar-label">Rab</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:60px" title="Kam: Rp 1.8jt"></div><span class="bar-label">Kam</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:30px" title="Jum: Rp 800k"></div><span class="bar-label">Jum</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:95px" title="Sab: Rp 2.8jt"></div><span class="bar-label">Sab</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:55px" title="Min: Rp 1.5jt"></div><span class="bar-label">Min</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:6px;font-size:10px;color:#999">* Data dummy — saldo reset bulanan (filter bulan ini)</div>
+</div>
+
+<!-- ===================== TRANSAKSI ===================== -->
+<div class="page" id="page-transaksi">
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-plus-circle" style="color:#4a9df5"></i> Transaksi Baru</h3></div>
+    <div class="card-body">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-success" style="flex:1"><i class="fas fa-arrow-up"></i> Pemasukan</button>
+        <button class="btn btn-outline" style="flex:1"><i class="fas fa-arrow-down"></i> Pengeluaran</button>
+      </div>
+      <div class="row">
+        <div class="col-4"><div class="form-group"><label>Tanggal</label><input type="date" value="2026-06-21"></div></div>
+        <div class="col-4"><div class="form-group"><label>Kategori</label><select><option>BAPAK</option><option>CASH</option><option>LISTRIK</option><option>MAKANAN</option></select></div></div>
+        <div class="col-4"><div class="form-group"><label>Jumlah (Rp)</label><input type="number" placeholder="Nominal" value="50000"></div></div>
+      </div>
+      <div class="row">
+        <div class="col-12"><div class="form-group"><label>Keterangan</label><input type="text" placeholder="Deskripsi transaksi..."></div></div>
+      </div>
+      <button class="btn btn-primary btn-block"><i class="fas fa-save"></i> Simpan Transaksi</button>
+      <div style="margin-top:12px">
+        <p style="font-size:11px;color:#999;margin-bottom:6px">Quick nominal:</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm">Rp 5.000</button>
+          <button class="btn btn-outline btn-sm">Rp 10.000</button>
+          <button class="btn btn-outline btn-sm">Rp 15.000</button>
+          <button class="btn btn-outline btn-sm">Rp 25.000</button>
+          <button class="btn btn-outline btn-sm">Rp 50.000</button>
+          <button class="btn btn-outline btn-sm">Rp 100.000</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== RIWAYAT ===================== -->
+<div class="page" id="page-riwayat">
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-history" style="color:#4a9df5"></i> Riwayat Transaksi</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <input type="date" style="padding:5px 10px;border:1px solid #dde1e7;border-radius:6px;font-size:12px;max-width:140px">
+        <button class="btn btn-outline btn-sm"><i class="fas fa-filter"></i></button>
+        <button class="btn btn-success btn-sm"><i class="fas fa-download"></i> Export</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Tgl</th><th>Karyawan</th><th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Jenis</th><th>Aksi</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>21/06</td><td>Teguh</td><td><span class="badge badge-success">CASH</span></td><td>Pembayaran pelanggan</td><td style="color:#27ae60;font-weight:600">+Rp 150.000</td><td><span class="badge badge-success">Masuk</span></td><td><div class="btn-group"><button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></div></td></tr>
+          <tr><td>2</td><td>21/06</td><td>Teguh</td><td><span class="badge badge-info">BAPAK</span></td><td>Uang jajan</td><td style="color:#27ae60;font-weight:600">+Rp 500.000</td><td><span class="badge badge-success">Masuk</span></td><td><div class="btn-group"><button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></div></td></tr>
+          <tr><td>3</td><td>21/06</td><td>Edo</td><td><span class="badge badge-warning">LISTRIK</span></td><td>Token PLN</td><td style="color:#e74c3c;font-weight:600">-Rp 250.000</td><td><span class="badge badge-danger">Keluar</span></td><td><div class="btn-group"><button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></div></td></tr>
+          <tr><td>4</td><td>21/06</td><td>Teguh</td><td><span class="badge badge-info">MAKANAN</span></td><td>Beli bahan</td><td style="color:#e74c3c;font-weight:600">-Rp 85.000</td><td><span class="badge badge-danger">Keluar</span></td><td><div class="btn-group"><button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></div></td></tr>
+          <tr><td>5</td><td>20/06</td><td>Edo</td><td><span class="badge badge-secondary">BAPAK</span></td><td>Jatah bulanan</td><td style="color:#27ae60;font-weight:600">+Rp 1.000.000</td><td><span class="badge badge-success">Masuk</span></td><td><div class="btn-group"><button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></div></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card-footer">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#999;flex-wrap:wrap">
+        <span>Total: 25 transaksi</span>
+        <span>Total: Rp 4.250.000</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LAPORAN (Default) ===================== -->
+<div class="page" id="page-laporan">
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body" style="padding:12px 18px">
+      <div class="row" style="align-items:end">
+        <div class="col-3">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:#999">Periode</label>
+            <select style="padding:7px 10px;font-size:12px;">
+              <option>Kemarin</option>
+              <option>Minggu Ini</option>
+              <option>Minggu Kemarin</option>
+              <option selected>Bulan Ini</option>
+              <option>Kustom</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-3" style="display:none">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:#999">Dari</label>
+            <input type="date">
+          </div>
+        </div>
+        <div class="col-3" style="display:none">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:#999">Sampai</label>
+            <input type="date">
+          </div>
+        </div>
+        <div class="col-3" style="text-align:right">
+          <span style="font-size:11px;color:#999">2026-06-01 — 2026-06-21</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-3"><div class="small-box bg-primary"><div class="inner"><h3>Rp 12.450.000</h3><p>SALDO</p></div><div class="icon"><i class="fas fa-wallet"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-success"><div class="inner"><h3>Rp 8.230.000</h3><p>SALDO CASH</p></div><div class="icon"><i class="fas fa-coins"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-warning"><div class="inner"><h3>Rp 3.500.000</h3><p>SALDO BAPAK</p></div><div class="icon"><i class="fas fa-user-tie"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-info"><div class="inner"><h3>48</h3><p>Total Transaksi</p></div><div class="icon"><i class="fas fa-exchange-alt"></i></div></div></div>
+  </div>
+  <div class="row">
+    <div class="col-6"><div class="small-box bg-success" style="margin-bottom:0"><div class="inner"><h3>Rp 18.750.000</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
+    <div class="col-6"><div class="small-box bg-danger" style="margin-bottom:0"><div class="inner"><h3>Rp 6.300.000</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-chart-line" style="color:#27ae60"></i> Grafik 7 Hari</h3></div>
+        <div class="card-body">
+          <div class="chart-bars">
+            <div class="bar-wrap"><div class="bar" style="height:80px"></div><span class="bar-label">Min</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:45px"></div><span class="bar-label">Sen</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:120px"></div><span class="bar-label">Sel</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:60px"></div><span class="bar-label">Rab</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:30px"></div><span class="bar-label">Kam</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:95px"></div><span class="bar-label">Jum</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:55px"></div><span class="bar-label">Sab</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-chart-bar" style="color:#4a9df5"></i> Pengeluaran per Kategori</h3></div>
+        <div class="card-body">
+          <div class="progress-item">
+            <div class="label"><span>LISTRIK</span><span>Rp 1.200.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:100%;background:#4a9df5"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="label"><span>MAKANAN</span><span>Rp 850.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:70%;background:#4a9df5"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="label"><span>TRANSPORT</span><span>Rp 500.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:42%;background:#4a9df5"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="label"><span>BELANJA</span><span>Rp 350.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:29%;background:#4a9df5"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-info-circle" style="color:#17a2b8"></i> Ringkasan Bulan Ini</h3></div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-4"><p style="font-size:12px;color:#999">Total Transaksi</p><p style="font-size:16px;font-weight:600">48</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Rata-rata Harian</p><p style="font-size:16px;font-weight:600">Rp 521.875</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Transaksi per Hari</p><p style="font-size:16px;font-weight:600">~2</p></div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <div class="col-4"><p style="font-size:12px;color:#999">Transaksi Masuk</p><p style="font-size:16px;font-weight:600;color:#27ae60">32</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Transaksi Keluar</p><p style="font-size:16px;font-weight:600;color:#e74c3c">16</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Range</p><p style="font-size:14px;font-weight:600">2026-06-01 — 2026-06-21</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LAPORAN (Filter Minggu Kemarin) ===================== -->
+<div class="page" id="page-laporan2">
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body" style="padding:12px 18px">
+      <div class="row" style="align-items:end">
+        <div class="col-3">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:#999">Periode</label>
+            <select style="padding:7px 10px;font-size:12px;">
+              <option>Kemarin</option>
+              <option>Minggu Ini</option>
+              <option selected>Minggu Kemarin</option>
+              <option>Bulan Ini</option>
+              <option>Kustom</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-3" style="display:none">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:#999">Dari</label>
+            <input type="date">
+          </div>
+        </div>
+        <div class="col-3" style="display:none">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:11px;color:#999">Sampai</label>
+            <input type="date">
+          </div>
+        </div>
+        <div class="col-3" style="text-align:right">
+          <span style="font-size:11px;color:#999">2026-06-08 — 2026-06-14</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-3"><div class="small-box bg-primary"><div class="inner"><h3>Rp 3.240.000</h3><p>SALDO</p></div><div class="icon"><i class="fas fa-wallet"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-success"><div class="inner"><h3>Rp 1.950.000</h3><p>SALDO CASH</p></div><div class="icon"><i class="fas fa-coins"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-warning"><div class="inner"><h3>Rp 1.000.000</h3><p>SALDO BAPAK</p></div><div class="icon"><i class="fas fa-user-tie"></i></div></div></div>
+    <div class="col-3"><div class="small-box bg-info"><div class="inner"><h3>14</h3><p>Total Transaksi</p></div><div class="icon"><i class="fas fa-exchange-alt"></i></div></div></div>
+  </div>
+  <div class="row">
+    <div class="col-6"><div class="small-box bg-success" style="margin-bottom:0"><div class="inner"><h3>Rp 5.100.000</h3><p>Total Pemasukan</p></div><div class="icon"><i class="fas fa-arrow-up"></i></div></div></div>
+    <div class="col-6"><div class="small-box bg-danger" style="margin-bottom:0"><div class="inner"><h3>Rp 1.860.000</h3><p>Total Pengeluaran</p></div><div class="icon"><i class="fas fa-arrow-down"></i></div></div></div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-chart-line" style="color:#27ae60"></i> Grafik 7 Hari</h3></div>
+        <div class="card-body">
+          <div class="chart-bars">
+            <div class="bar-wrap"><div class="bar" style="height:50px"></div><span class="bar-label">Sen</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:25px"></div><span class="bar-label">Sel</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:90px"></div><span class="bar-label">Rab</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:40px"></div><span class="bar-label">Kam</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:15px"></div><span class="bar-label">Jum</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:70px"></div><span class="bar-label">Sab</span></div>
+            <div class="bar-wrap"><div class="bar" style="height:65px"></div><span class="bar-label">Min</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-chart-bar" style="color:#4a9df5"></i> Pengeluaran per Kategori</h3></div>
+        <div class="card-body">
+          <div class="progress-item">
+            <div class="label"><span>MAKANAN</span><span>Rp 450.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:100%;background:#4a9df5"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="label"><span>LISTRIK</span><span>Rp 300.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:67%;background:#4a9df5"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="label"><span>TRANSPORT</span><span>Rp 150.000</span></div>
+            <div class="progress-bar"><div class="fill" style="width:33%;background:#4a9df5"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-info-circle" style="color:#17a2b8"></i> Ringkasan Minggu Kemarin</h3></div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-4"><p style="font-size:12px;color:#999">Total Transaksi</p><p style="font-size:16px;font-weight:600">14</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Rata-rata Harian</p><p style="font-size:16px;font-weight:600">Rp 497.143</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Transaksi per Hari</p><p style="font-size:16px;font-weight:600">~2</p></div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <div class="col-4"><p style="font-size:12px;color:#999">Transaksi Masuk</p><p style="font-size:16px;font-weight:600;color:#27ae60">9</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Transaksi Keluar</p><p style="font-size:16px;font-weight:600;color:#e74c3c">5</p></div>
+            <div class="col-4"><p style="font-size:12px;color:#999">Range</p><p style="font-size:14px;font-weight:600">2026-06-08 — 2026-06-14</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== KARYAWAN ===================== -->
+<div class="page" id="page-karyawan">
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-user-plus" style="color:#4a9df5"></i> Buat Akun Karyawan</h3></div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-4"><div class="form-group"><label>Nama Lengkap</label><input type="text" placeholder="Nama karyawan"></div></div>
+        <div class="col-4"><div class="form-group"><label>Email</label><input type="email" placeholder="email@warung.com"></div></div>
+        <div class="col-4"><div class="form-group"><label>Password</label><input type="password" placeholder="Password"></div></div>
+      </div>
+      <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Buat Akun</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-users" style="color:#27ae60"></i> Daftar Karyawan (2)</h3></div>
+    <div class="card-body">
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>Transaksi</th><th>Total</th><th>Aksi</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><div style="display:flex;align-items:center"><div style="width:26px;height:26px;border-radius:50%;background:#4a9df5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-right:8px">E</div>Edo</div></td>
+            <td>edo@warung.com</td>
+            <td>18</td>
+            <td>Rp 2.450.000</td>
+            <td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><div style="display:flex;align-items:center"><div style="width:26px;height:26px;border-radius:50%;background:#4a9df5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-right:8px">S</div>Sari</div></td>
+            <td>sari@warung.com</td>
+            <td>12</td>
+            <td>Rp 1.200.000</td>
+            <td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== KATEGORI ===================== -->
+<div class="page" id="page-kategori">
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-tag" style="color:#4a9df5"></i> Tambah Kategori</h3></div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-6"><div class="form-group"><label>Nama Kategori</label><input type="text" placeholder="Nama kategori baru"></div></div>
+        <div class="col-3"><div class="form-group"><label>&nbsp;</label><button class="btn btn-success btn-block"><i class="fas fa-plus"></i> Tambah</button></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-list" style="color:#27ae60"></i> Kategori Transaksi</h3></div>
+    <div class="card-body">
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Nama Kategori</th><th>Aksi</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>BAPAK</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+          <tr><td>2</td><td>CASH</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+          <tr><td>3</td><td>LISTRIK</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+          <tr><td>4</td><td>MAKANAN</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+          <tr><td>5</td><td>TRANSPORT</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+          <tr><td>6</td><td>BELANJA</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+          <tr><td>7</td><td>PULSA</td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PENGATURAN ===================== -->
+<div class="page" id="page-pengaturan">
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-user-cog" style="color:#4a9df5"></i> Profil</h3></div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-6"><div class="form-group"><label>Nama Lengkap</label><input type="text" value="Teguh"></div></div>
+        <div class="col-6"><div class="form-group"><label>Email</label><input type="email" value="teguh@warung.com"></div></div>
+      </div>
+      <button class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-info-circle" style="color:#17a2b8"></i> Informasi Aplikasi</h3></div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f2f5"><span style="color:#999">Versi</span><span style="font-weight:500">1.0.0</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f2f5"><span style="color:#999">Database</span><span style="font-weight:500">Firebase Firestore</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f2f5"><span style="color:#999">Total Pengguna</span><span style="font-weight:500">3 (1 Admin + 2 Karyawan)</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f2f5"><span style="color:#999">Total Transaksi</span><span style="font-weight:500">48</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:#999">Hosting</span><span style="font-weight:500">GitHub Pages + Cloudflare</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-shield-alt" style="color:#e74c3c"></i> Akun</h3></div>
+    <div class="card-body">
+      <div class="toggle-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f2f5;font-size:13px">
+        <div><span style="font-weight:600">Logout</span><br><small style="color:#999;font-size:11px">Keluar dari akun</small></div>
+        <button class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.menu-tabs a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.menu-tabs a').forEach(a => {
+    if(a.textContent.trim().toLowerCase().includes(name.replace('2',''))) a.classList.add('active');
+  });
+  // Fallback untuk laporan2
+  if(name==='laporan2') {
+    document.querySelectorAll('.menu-tabs a').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.menu-tabs a')[4]?.classList.add('active');
+  }
+}
+</script>
+</body>
+</html>

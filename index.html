@@ -385,6 +385,15 @@ function setData(key, val) {
 }
 function getTrans() { return window._transCache; }
 function setTrans(t) {}
+function getTransByWarung() {
+  if(!currentUser) return window._transCache || [];
+  const all = window._transCache || [];
+  if(currentUser.role === 'karyawan') return all.filter(t=>t.userId===currentUser.id);
+  // Admin: filter by warung, fallback ke semua kalo gak ada warung
+  const warung = currentUser.warung;
+  if(!warung) return all;
+  return all.filter(t=>!t.warung || t.warung===warung);
+}
 function getUsers() { return window._usersCache; }
 function setUsers(u) {}
 function getCats() { return window._catCache; }
@@ -531,6 +540,11 @@ onCacheReady(async () => {
       await new Promise(r => setTimeout(r, 1000));
     } catch(e) {}
   }
+  // Tunggu users cache terisi (kasih timeout 5 detik)
+  for(let i = 0; i < 25; i++) {
+    if(window._usersCache && window._usersCache.length > 0) break;
+    await new Promise(r => setTimeout(r, 200));
+  }
   const saved = getCurrentUser();
   if(saved) {
     const user = window._usersCache.find(u=>u.id===saved.id);
@@ -556,7 +570,8 @@ async function simpanTransaksi() {
     tanggal: tgl,
     waktu: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
     kategori: kat, jumlah: Number(jml), keterangan: ket||'-',
-    tipe: tipeTransaksi, userId: currentUser.id, userName: currentUser.name
+    tipe: tipeTransaksi, userId: currentUser.id, userName: currentUser.name,
+    warung: currentUser.warung || 'Warung Saya'
   });
   document.getElementById('trJml').value = '';
   document.getElementById('trKet').value = '';
@@ -732,9 +747,7 @@ function toggleSidebar() {
 
 // ======================== DASHBOARD ========================
 function renderDashboard(area) {
-  const allTrans = getTrans();
-  const user = currentUser;
-  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const trans = getTransByWarung();
   
   // SALDO = Filter bulan ini aja (reset tiap tanggal 1)
   const bulanIni = trans.filter(t=>{
@@ -825,6 +838,8 @@ function renderDashboard(area) {
 
 // ======================== TRANSAKSI ========================
 function renderTransaksi(area) {
+  // Reset tipe ke pemasukan setiap render
+  tipeTransaksi = 'pemasukan';
   area.innerHTML = `
     <div class="card">
       <div class="card-header"><h3><i class="fas fa-plus-circle" style="color:#4a9df5"></i> Transaksi Baru</h3></div>
@@ -863,9 +878,7 @@ function setTipe(t) {
 
 // ======================== RIWAYAT ========================
 function renderRiwayat(area) {
-  const allTrans = getTrans();
-  const user = currentUser;
-  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const trans = getTransByWarung();
   const sorted = [...trans].reverse();
   
   area.innerHTML = `
@@ -911,9 +924,7 @@ function renderRiwayat(area) {
 function filterRiwayat() {
   const tgl = document.getElementById('filterTgl').value;
   if(!tgl) return;
-  const allTrans = getTrans();
-  const user = currentUser;
-  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const trans = getTransByWarung();
   const filtered = trans.filter(t=>t.tanggal===tgl).reverse();
   
   const tbody = document.querySelector('#riwayatTable tbody');
@@ -932,9 +943,7 @@ function filterRiwayat() {
 }
 
 function exportRiwayat() {
-  const allTrans = getTrans();
-  const user = currentUser;
-  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const trans = getTransByWarung();
   // Simple CSV
   let csv = 'Tanggal,Kategori,Keterangan,Jumlah,Tipe,Karyawan\n';
   trans.forEach(t=>{
@@ -1024,9 +1033,7 @@ function getDateRangeLaporan(mode, customStart, customEnd) {
 }
 
 function renderLaporan(area) {
-  const allTrans = getTrans();
-  const user = currentUser;
-  const trans = user.role==='karyawan' ? allTrans.filter(t=>t.userId===user.id) : allTrans;
+  const trans = getTransByWarung();
   
   const mode = document.getElementById('laporanMode')?.value || 'bulan';
   const customStart = document.getElementById('laporanStart')?.value || '';
